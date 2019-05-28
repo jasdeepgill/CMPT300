@@ -1,0 +1,36 @@
+JOHNNY DOAN, ID: 301289781
+JOHNSTON YANG ID: 301282192
+
+==========================
+How to Compile Our Code
+==========================
+
+Make sure the Makefile is in the correct directory with the correct files.
+If you were to test inserting 1 node at the head, then you would go to test_list.c and uncomment line 20 to line 37. 
+Go to the command terminal, type in "make" and press enter. 
+
+
+==========================
+Code Design & Issues:
+==========================
+
+--------------------------
+mystring.c 
+--------------------------
+
+The functions such as mystrlen, mystrcpy, and mystrdup were easy to implement. No problems were encountered while testing.
+
+We had some issues with mystrcmp as we were not sure how it was suppose to be implemented. We asked on Google Groups and the instructor answer our question and said that mystrcmp is suppose to be like strcmp that is in the stdlib.h.
+
+--------------------------
+List.c 
+--------------------------
+While creating List_createNode function, we were getting errors because we forgot to delcare the type variable.
+
+With List_sort implementation, we chose insertion sort because it is the one we are most comfortable with and less time consuming implementing. The implementation for insertion sort for the linked list is as follows:
+
+First we create a new list call it sorted_list, that list will contain the nodes that are sorted in ascending order. Then for each node in the original list (call it node x) we compare that head to the sorted_list's head (call it node y). If x < y then List_inserthead(x) because everything to the left of the head in sorted_list is guaranteed to be less than everything else in its list. So x would fit there. Now the case where x >= y, then we have to iterate through the sorted list to find the point of insertion and insert the node there. After that, the original list should be empty meaning that the sorted_list is the sorted list we want so we just make headRef = sorted_list. We are done ez boiis.
+
+The most difficult function implementation was List_deleteNode. The problem arises from the edge cases, most notably, delete the head of the linked list. Before we fixed it, after we delete the head, you are unable to count the number of nodes or look at the new head. You would lose the linked list and be unable to retrieve it. 
+
+There were no issues while implmenting List_insertHead, List_insertTail, List_countNodes, and List_findNode.

@@ -105,6 +105,12 @@ void read_command(char *buff, char *tokens[], _Bool *in_background)
 	}
 }
 
+void ex(char* buf)
+{
+	free(buf);
+	exit(0);
+}
+
 void print(char* s)
 {
 	write(STDOUT_FILENO, s, strlen(s));
@@ -144,7 +150,6 @@ void dequeue()
 void queueSave(char* cmd[], _Bool inBackground)
 {count++;
 	
-	printf("%d\n", inc);
 	if (count > 10)
 	{
 			inc--;
@@ -212,9 +217,18 @@ void hist()
 
 void hist_select(char* cmd[])
 {
-	if (cmd[0][1] == '!' && cmd[0][2] == '\0')
+	pid_t childPID;
+	childPID = fork();
+	if (childPID == 0)
 	{
-		
+		if (cmd[0][1] == '!' && cmd[0][2] == '\0')
+		{
+			
+		}
+	}
+	else
+	{
+
 	}
 }
 
@@ -256,7 +270,7 @@ int main(int argc, char* argv[])
 			write(STDOUT_FILENO, "\n", strlen("\n"));
 		}
 		if (in_background) {
-			write(STDOUT_FILENO, "Run in background.", strlen("Run in background."));
+			write(STDOUT_FILENO, "Run in background.\n", strlen("Run in background.\n"));
 		}
 
 		/**
@@ -284,10 +298,10 @@ int main(int argc, char* argv[])
 			// print("\n");
 			print(tokens[0]);
 			print("\n");
-			if(execvp(tokens[0], tokens) < 0){ perror("kill me."); exit(0);}
+			if(execvp(tokens[0], tokens) < 0){ perror("kill me."); ex(buf);}
 		else
 		{
-			exit(0);
+			ex(buf);
 		// 	if (strcmp(tokens[0], "history") == 0)
 		// {
 		// 	hist();
@@ -318,25 +332,28 @@ int main(int argc, char* argv[])
 			// print("\n");
 					if (in_background)
 		{
+			print("IN BACKGROUND.\n");
 			while (waitpid(-1, NULL, WNOHANG) > 0);
 		}
 		else
 		{
 			waitpid(-1, NULL, 0);
 		}
+		if (tokens[0] != NULL)
+		{
+			
 		
 			queueSave(tokens, in_background);
+			// print("CMON BROOOOOOO");
 			if (strcmp(tokens[0], "exit") == 0)
 		{
 			print("free me boiii\n");
-			free(buf);
-			free(cwd);
-			print("bruh\n");
-			exit(0);
+			ex(buf);
 		}
 		else if (strcmp(tokens[0], "pwd") == 0)
 		{
 			print(cwd);
+			print("\n");
 		}
 		else if (strcmp(tokens[0], "cd") == 0)
 		{
@@ -354,10 +371,10 @@ int main(int argc, char* argv[])
 		{
 			hist_select(tokens);
 		}
-
+	}
 		// print("SWAG\n");
 		// }
-		
+		free(buf);
 	}
 
 	return 0;

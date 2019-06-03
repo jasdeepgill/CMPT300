@@ -7,6 +7,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/types.h>
+#include <sys/wait.h>
+
+
 #define COMMAND_LENGTH 1024
 #define NUM_TOKENS (COMMAND_LENGTH / 2 + 1)
 #define MAX_BUF 1024
@@ -14,8 +18,7 @@
 char history[HISTORY_DEPTH][COMMAND_LENGTH];
 int cmdNum[HISTORY_DEPTH];
 int count = 0;
-_Bool anpersand[HISTORY_DEPTH];
-
+int inc;
 
 /**
  * Command Input and Processing
@@ -107,78 +110,114 @@ void print(char* s)
 	write(STDOUT_FILENO, s, strlen(s));
 }
 
-void reOrderQueue()
+void print_int(int i)
 {
-	for (int i = 0; i < count-1; ++i)
+	char a[1024];
+	sprintf(a, "%d", i);
+	print(a);
+}
+
+void clearHistorySlot(int index)
+{
+	memset(history[index], 0, sizeof(char)*COMMAND_LENGTH);
+}
+
+void dequeue()
+{
+	// assert inc == 9
+	for (int i = 0; i < inc; ++i)
 	{
 		cmdNum[i] = cmdNum[i+1];
 		int j = 0;
-		while(history[i][j] != '\0')
+		clearHistorySlot(i);
+		while(history[i+1][j] != '\0')
 		{
 			history[i][j] = history[i+1][j];
-		}
-		// history[i] = history[i+1];
-		// anpersand[i] = anpersand[i+1];
-	}
-}
-
-// void printHistory()
-// {
-// 	for (int i = 0; i < HISTORY_DEPTH; ++i)
-// 	{
-// 		int j = 0;
-// 		while(history[i][j] != '\0')
-// 		{
-// 			print()
-// 		}
-// 	}
-// }
-
-void queueSave(char* cmd[])
-{
-	if (count >= 10)
-	{
-		reOrderQueue();
-		count--;
-	}
-	count++;
-	print("signals\n");
-	// if (cmd[2][0] == '&')
-	// {
-	// 	anpersand[count-1] = 1;
-	// }
-	cmdNum[count-1] = count;
-	int i = 0;
-	int j = 0;
-	while(cmd[i] != NULL)
-	{
-		print("doubleweed\n");
-		
-		while(cmd[i][j] != '\0')
-		{
-			history[count-1][j] = cmd[i][j];
 			j++;
 		}
-		history[count-1][j] = '\0';
+	}
+	clearHistorySlot(inc);
+}
+
+
+
+void queueSave(char* cmd[], _Bool inBackground)
+{count++;
+	
+	printf("%d\n", inc);
+	if (count > 10)
+	{
+			inc--;
+		dequeue();
+
+	}
+	
+	cmdNum[inc] = count;
+	int i = 0;
+	int j = 0;
+	
+	while(cmd[i] != NULL)
+	{
+		// print("doubleweed\n");
+		int w = 0;
+		while(cmd[i][w] != '\0')
+		{
+			history[inc][j] = cmd[i][w];
+			w++;
+			j++;
+			// printf("%s %d\n", history[inc], j);
+		}
+		// char f[80];
+		// sprintf(f, "%d", j);
+		// print("j=");
+		// print(f);
+		// print("\n");
+		history[inc][j] = ' ';
 		j++;
 		i++;
 	}
+	if (inBackground)
+		{
+			history[inc][j] = '&'; 
+			history[inc][j+1] = '\0';
+		}	
+	else
+	{
+		history[inc][j-1] = '\0';
+	}
+	// print("cmd[1]=");
+	// print(cmd[1]);
+	// print("\n");
+	print("history[inc]=");
+	print(history[inc]);
+	print("\n");
+	inc++;
 	print("weed\n");
 	// history[count-1] = cmd[1];
 }
 
 void hist()
 {
-	for (int i = 0; i < count; ++i)
+	for (int i = 0; i < inc; ++i)
 	{
 		char stuff[1024];
 		sprintf(stuff, "%d", cmdNum[i]);
 		print(stuff);
 		print("	");
+
 		print(history[i]);
 		print("\n");
 	}
 }
+
+void hist_select(char* cmd[])
+{
+	if (cmd[0][1] == '!' && cmd[0][2] == '\0')
+	{
+		
+	}
+}
+
 
 /**
  * Main and Execute Commands
@@ -189,9 +228,11 @@ int main(int argc, char* argv[])
 	char *tokens[NUM_TOKENS];
 	while (true) {
 
+		pid_t childPID;
 		size_t size = sizeof(char) * MAX_BUF;
 		char* buf = (char *) malloc(size);
 		char* cwd;
+		
 
 		cwd = getcwd(buf, size);
 		if (cwd == NULL)
@@ -205,6 +246,8 @@ int main(int argc, char* argv[])
 		write(STDOUT_FILENO, "> ", strlen("> "));
 		_Bool in_background = false;
 		read_command(input_buffer, tokens, &in_background);
+
+		
 
 		// DEBUG: Dump out arguments:
 		for (int i = 0; tokens[i] != NULL; i++) {
@@ -224,8 +267,65 @@ int main(int argc, char* argv[])
 		 *    child to finish. Otherwise, parent loops back to
 		 *    read_command() again immediately.
 		 */
-		queueSave(tokens);
-		if (strcmp(tokens[0], "exit") == 0)
+
+		childPID = fork();
+		if (childPID == 0)
+		{
+			// queueSave(tokens, in_background);
+			pid_t parent_pid = getppid();
+			print("parent pid: ");
+			print_int(parent_pid);
+			print("\n");
+			pid_t child_pid = getpid();
+			print("child pid: ");
+			print_int(child_pid);
+			print("\n");
+			// print_int(childPID);
+			// print("\n");
+			print(tokens[0]);
+			print("\n");
+			if(execvp(tokens[0], tokens) < 0) perror("kill me.");
+		else
+		{
+		// 	if (strcmp(tokens[0], "history") == 0)
+		// {
+		// 	hist();
+		// }
+		// else if (tokens[0][0] == '!')
+		// {
+		// 	hist_select(tokens);
+		// }
+
+		// 	if (in_background)
+		// {
+		// 	while (waitpid(-1, NULL, WNOHANG) > 0);
+		// }
+		// else
+		// {
+		// 	waitpid(-1, NULL, 0);
+		// }
+		
+		// }
+		}}
+		
+		// else
+
+		// {
+			// pid_t parent_pid = getpid();
+			// print("Current pid: ");
+			// print_int(parent_pid);
+			// print("\n");
+					if (in_background)
+		{
+			while (waitpid(-1, NULL, WNOHANG) > 0);
+		}
+		else
+		{
+			waitpid(-1, NULL, 0);
+		}
+		
+			queueSave(tokens, in_background);
+			if (strcmp(tokens[0], "exit") == 0)
 		{
 			print("free me boiii\n");
 			free(buf);
@@ -237,28 +337,26 @@ int main(int argc, char* argv[])
 		{
 			print(cwd);
 		}
-		// else if (strcmp(tokens[0], "cd") == 0)
-		// {
-		// 	if (chdir(tokens[1]) == -1)
-		// 	{
-		// 		perror("WTF You idiot\n");
-		// 	}
-		// }
-		else if (strcmp(tokens[0], "history") == 0)
+		else if (strcmp(tokens[0], "cd") == 0)
 		{
+			if (chdir(tokens[1]) == -1)
+			{
+				perror("WTF You idiot\n");
+			}
+		}
+		else if (strcmp(tokens[0], "history") == 0)
+		{	
+			// print("ENTEREEEREEEEEEE\n");
 			hist();
 		}
+		else if (tokens[0][0] == '!')
+		{
+			hist_select(tokens);
+		}
 
-		// execvp(tokens[0], tokens);
-		// if (!in_background)
-		// {
-		// 	waitpid(-1, NULL, 0)
+		// print("SWAG\n");
 		// }
-		// else
-		// {
-		// 	while (waitpid(-1, NULL, WNOHANG) > 0); // do nothing.
-		// }
-		print("SWAG\n");
+		
 	}
 
 	return 0;

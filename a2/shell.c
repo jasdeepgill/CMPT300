@@ -284,9 +284,10 @@ int main(int argc, char* argv[])
 			// print("\n");
 			print(tokens[0]);
 			print("\n");
-			if(execvp(tokens[0], tokens) < 0) perror("kill me.");
+			if(execvp(tokens[0], tokens) < 0){ perror("kill me."); exit(0);}
 		else
 		{
+			exit(0);
 		// 	if (strcmp(tokens[0], "history") == 0)
 		// {
 		// 	hist();

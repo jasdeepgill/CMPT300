@@ -347,6 +347,7 @@ void hist_select(char* cmd[], _Bool inBackground)
 				inBackground = 1;
 				tokens[num_tokens-1] = 0;
 			}
+			queueSave(tokens, inBackground);
 			new_child_process(tokens, inBackground);
 			hist_select_helper(tokens, inBackground);
 		}
@@ -411,6 +412,7 @@ void hist_select(char* cmd[], _Bool inBackground)
 					inBackground = 1;
 					tokens[num_tokens-1] = 0;
 				}
+				queueSave(tokens, inBackground);
 				new_child_process(tokens, inBackground);
 				hist_select_helper(tokens, inBackground);
 			}

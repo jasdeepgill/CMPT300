@@ -83,7 +83,7 @@ void read_command(char *buff, char *tokens[], _Bool *in_background)
 	// Read input
 	int length = read(STDIN_FILENO, buff, COMMAND_LENGTH-1);
 
-	if (length < 0) {
+	if (length < 0 && errno != EINTR) {
 		perror("Unable to read command from keyboard. Terminating.\n");
 		exit(-1);
 	}
@@ -145,7 +145,11 @@ void dequeue()
 
 void queueSave(char* cmd[], _Bool inBackground)
 {
+<<<<<<< HEAD
+	if(errno != EINTR)
+=======
 	if(errno !+ EINTR)
+>>>>>>> dbc925fcc5b3073cdcbe56817fd9e7fc8ee91182
 	{
 	count++;
 	
@@ -482,10 +486,17 @@ int main(int argc, char* argv[])
 		// {
 		// 	waitpid(-1, NULL, 0);
 		// }
+<<<<<<< HEAD
+		sigaction(SIGINT, &handler, NULL);
+		// wait_for_child(in_background);
+		
+		
+=======
 		
 		wait_for_child(in_background);
 		
 		sigaction(SIGINT, &handler, NULL);
+>>>>>>> dbc925fcc5b3073cdcbe56817fd9e7fc8ee91182
 		
 		if (tokens[0] != NULL)
 		{

@@ -145,11 +145,7 @@ void dequeue()
 
 void queueSave(char* cmd[], _Bool inBackground)
 {
-<<<<<<< HEAD
 	if(errno != EINTR)
-=======
-	if(errno !+ EINTR)
->>>>>>> dbc925fcc5b3073cdcbe56817fd9e7fc8ee91182
 	{
 	count++;
 	
@@ -208,6 +204,7 @@ void queueSave(char* cmd[], _Bool inBackground)
 
 void hist()
 {
+	print("\n");
 	for (int i = 0; i < inc; ++i)
 	{
 		char stuff[1024];
@@ -315,6 +312,11 @@ void hist_select(char* cmd[], _Bool inBackground)
 		print("Found tokens: ");
 		print_int(num_tokens);
 		print("\n");
+		if (strcmp(tokens[num_tokens-1], "&") == 0)
+		{
+			inBackground = 1;
+			tokens[num_tokens-1] = 0;
+		}
 		new_child_process(tokens, inBackground);
 		hist_select_helper(tokens, inBackground);
 	}
@@ -353,6 +355,11 @@ void hist_select(char* cmd[], _Bool inBackground)
 			print("Found tokens: ");
 			print_int(num_tokens);
 			print("\n");
+			if (strcmp(tokens[num_tokens-1], "&") == 0)
+			{
+				inBackground = 1;
+				tokens[num_tokens-1] = 0;
+			}
 			new_child_process(tokens, inBackground);
 			hist_select_helper(tokens, inBackground);
 		}
@@ -444,10 +451,10 @@ int main(int argc, char* argv[])
 			// print("\n");
 			// print(tokens[0]);
 			// print("\n");
-			if(execvp(tokens[0], tokens) < 0){ perror("kill me.");}
+			if(execvp(tokens[0], tokens) < 0){ perror("kill me."); exit(0);}
 			else
 			{
-			// exit(0);
+				exit(0);
 		// 	if (strcmp(tokens[0], "history") == 0)
 		// {
 		// 	hist();
@@ -486,17 +493,16 @@ int main(int argc, char* argv[])
 		// {
 		// 	waitpid(-1, NULL, 0);
 		// }
-<<<<<<< HEAD
+
 		sigaction(SIGINT, &handler, NULL);
 		// wait_for_child(in_background);
 		
 		
-=======
+
 		
 		wait_for_child(in_background);
 		
 		sigaction(SIGINT, &handler, NULL);
->>>>>>> dbc925fcc5b3073cdcbe56817fd9e7fc8ee91182
 		
 		if (tokens[0] != NULL)
 		{

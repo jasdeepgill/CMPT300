@@ -6,9 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/signal.h>
 #include <ctype.h>
 
 #define COMMAND_LENGTH 1024
@@ -142,7 +144,10 @@ void dequeue()
 
 
 void queueSave(char* cmd[], _Bool inBackground)
-{count++;
+{
+	if(errno !+ EINTR)
+	{
+	count++;
 	
 	if (count > 10)
 	{
@@ -193,6 +198,8 @@ void queueSave(char* cmd[], _Bool inBackground)
 	inc++;
 	print("weed\n");
 	// history[count-1] = cmd[1];
+	}
+	errno = 0;
 }
 
 void hist()
@@ -207,6 +214,12 @@ void hist()
 		print(history[i]);
 		print("\n");
 	}
+}
+
+void handle_SIGINT()
+{
+	hist();
+	return;
 }
 
 void wait_for_child(_Bool inBackground)
@@ -363,6 +376,10 @@ int main(int argc, char* argv[])
 		char* buf = (char *) malloc(size);
 		char* cwd;
 		
+		struct sigaction handler;
+		handler.sa_handler = handle_SIGINT;
+		handler.sa_flags = 0;
+		sigemptyset(&handler.sa_mask);		
 
 		cwd = getcwd(buf, size);
 		if (cwd == NULL)
@@ -465,7 +482,11 @@ int main(int argc, char* argv[])
 		// {
 		// 	waitpid(-1, NULL, 0);
 		// }
+		
 		wait_for_child(in_background);
+		
+		sigaction(SIGINT, &handler, NULL);
+		
 		if (tokens[0] != NULL)
 		{
 			

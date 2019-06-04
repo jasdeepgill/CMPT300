@@ -447,7 +447,8 @@ int main(int argc, char* argv[])
 		struct sigaction handler;
 		handler.sa_handler = handle_SIGINT;
 		handler.sa_flags = 0;
-		sigemptyset(&handler.sa_mask);		
+		sigemptyset(&handler.sa_mask);
+		sigaction(SIGINT, &handler, NULL);	
 
 		cwd = getcwd(buf, size);
 		if (cwd == NULL)
@@ -518,14 +519,13 @@ int main(int argc, char* argv[])
 		
 		else
 		{
-		sigaction(SIGINT, &handler, NULL);
+		
 		
 
 
 		
 		wait_for_child(in_background);
 		
-		//sigaction(SIGINT, &handler, NULL);
 
 		
 		if (tokens[0] != NULL)

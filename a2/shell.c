@@ -325,83 +325,20 @@ void hist_select_helper(char* tokens[], _Bool inBackground)
 
 void hist_select(char* cmd[], _Bool inBackground)
 {
-
-	if (cmd[0][1] == '!' && cmd[0][2] == '\0')
+	if (count > 0)
 	{
-		
-		char* prev_cmd = history[inc-1];
-		// print("prev_cmd=");
-		// print(prev_cmd);
-		// print("\n");
-		print(prev_cmd);
-		print("\n");
-		char* tokens[NUM_TOKENS];
-		int num_tokens;
-		num_tokens = tokenize_command(prev_cmd, tokens);
-		// print("Found tokens: ");
-		// print_int(num_tokens);
-		// print("\n");
-		if (strcmp(tokens[num_tokens-1], "&") == 0)
+		if (cmd[0][1] == '!' && cmd[0][2] == '\0')
 		{
-			inBackground = 1;
-			tokens[num_tokens-1] = 0;
-		}
-		new_child_process(tokens, inBackground);
-		hist_select_helper(tokens, inBackground);
-	}
-	else if (isdigit(cmd[0][1]))
-	{
-
-		char num[1024];
-		int cmd_num;
-		int i = 1;
-		while(cmd[0][i] != '\0')
-		{
-			num[i-1] = cmd[0][i];
-			i++;
-			// print_int(i);
-		}
-		num[i-1] = '\0';
-		cmd_num = atoi(num);
-		// print("cmd[0]=");
-		// print(cmd[0]);
-		// print("\n");
-		// print("num=");
-		// print(num);
-		// print("\n");
-		// print("cmd_num=");
-		// print_int(cmd_num);
-		// print("\n");
-		_Bool inHistory = false;
-		i = 0;
-		while(i < inc)
-		{
-			if (cmdNum[i] == cmd_num)
-			{
-				inHistory = true;
-			}
-			i++;
-		}
-		if (!inHistory)
-		{
-			print("Error 04: Not in history.\n");
-		}
-		else
-		{
-			i = 0;
-			while(cmdNum[i] != cmd_num)
-			{
-				i++;
-			}
-			char* selected_cmd = history[i];
-			// print("selected_cmd=");
-			// print(selected_cmd);
+			
+			char* prev_cmd = history[inc-1];
+			// print("prev_cmd=");
+			// print(prev_cmd);
 			// print("\n");
-			print(selected_cmd);
+			print(prev_cmd);
 			print("\n");
 			char* tokens[NUM_TOKENS];
 			int num_tokens;
-			num_tokens = tokenize_command(selected_cmd, tokens);
+			num_tokens = tokenize_command(prev_cmd, tokens);
 			// print("Found tokens: ");
 			// print_int(num_tokens);
 			// print("\n");
@@ -413,12 +350,81 @@ void hist_select(char* cmd[], _Bool inBackground)
 			new_child_process(tokens, inBackground);
 			hist_select_helper(tokens, inBackground);
 		}
-		
+		else if (isdigit(cmd[0][1]))
+		{
 
+			char num[1024];
+			int cmd_num;
+			int i = 1;
+			while(cmd[0][i] != '\0')
+			{
+				num[i-1] = cmd[0][i];
+				i++;
+				// print_int(i);
+			}
+			num[i-1] = '\0';
+			cmd_num = atoi(num);
+			// print("cmd[0]=");
+			// print(cmd[0]);
+			// print("\n");
+			// print("num=");
+			// print(num);
+			// print("\n");
+			// print("cmd_num=");
+			// print_int(cmd_num);
+			// print("\n");
+			_Bool inHistory = false;
+			i = 0;
+			while(i < inc)
+			{
+				if (cmdNum[i] == cmd_num)
+				{
+					inHistory = true;
+				}
+				i++;
+			}
+			if (!inHistory)
+			{
+				print("Error 04: Not in history.\n");
+			}
+			else
+			{
+				i = 0;
+				while(cmdNum[i] != cmd_num)
+				{
+					i++;
+				}
+				char* selected_cmd = history[i];
+				// print("selected_cmd=");
+				// print(selected_cmd);
+				// print("\n");
+				print(selected_cmd);
+				print("\n");
+				char* tokens[NUM_TOKENS];
+				int num_tokens;
+				num_tokens = tokenize_command(selected_cmd, tokens);
+				// print("Found tokens: ");
+				// print_int(num_tokens);
+				// print("\n");
+				if (strcmp(tokens[num_tokens-1], "&") == 0)
+				{
+					inBackground = 1;
+					tokens[num_tokens-1] = 0;
+				}
+				new_child_process(tokens, inBackground);
+				hist_select_helper(tokens, inBackground);
+			}
+			
+
+		}
+		else
+		{
+			print("Error 03: Invalid history commmand (NaN).\n");
+		}
 	}
 	else
 	{
-		print("Error 03: Invalid history commmand (NaN).\n");
+		print("Error 05: There is no previous history of commmands.\n");
 	}
 	
 }

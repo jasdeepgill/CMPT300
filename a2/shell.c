@@ -21,6 +21,9 @@ char history[HISTORY_DEPTH][COMMAND_LENGTH];
 int cmdNum[HISTORY_DEPTH];
 int count = 0;
 int inc;
+// @global var
+// Inc will be the tail of both history array and cmdNum
+// count will count the number of commands. 
 
 /**
  * Command Input and Processing
@@ -203,7 +206,6 @@ void queueSave(char* cmd[], _Bool inBackground)
 
 void hist()
 {
-	print("\n");
 	for (int i = 0; i < inc; ++i)
 	{
 		char stuff[1024];
@@ -218,12 +220,14 @@ void hist()
 
 void handle_SIGINT()
 {
+	print("\n");
 	hist();
 	return;
 }
 
 void wait_for_child(_Bool inBackground)
 {
+
 	if (inBackground)
 		{
 			// print("IN BACKGROUND.\n");
@@ -241,11 +245,32 @@ void new_child_process(char* tokens[], _Bool inBackground)
 	child_pid = fork();
 	if (child_pid == 0)
 	{
-		if(execvp(tokens[0], tokens) < 0){ perror("Error 02.1: Invalid command or arguments."); exit(0);}
-			else
+		if(errno == EINTR)
 			{
+				exit(0);
+			}
+			if (tokens[0] != NULL)
+			{
+				
+				
+				if (tokens[0][0] != '!')
+				{
+					if (strcmp(tokens[0], "exit") != 0 && strcmp(tokens[0], "pwd") != 0 && strcmp(tokens[0], "cd") != 0 && strcmp(tokens[0], "history") != 0)
+					{
+						if(execvp(tokens[0], tokens) < 0){ print("Error 02.1: Invalid command or arguments for command: "); print(tokens[0]); print("\n"); exit(0);}
+							
+						
+					}
+				}
+				else
+				{
+					print(tokens[0]);
+					print(": ");
+					print("Unknown command.\n");
+				}
+				
+			}
 			exit(0);
-		}
 	}
 	else
 	{
@@ -257,47 +282,50 @@ void hist_select_helper(char* tokens[], _Bool inBackground)
 {
 	if (tokens[0] != NULL)
 		{
-			
-		
-				if (strcmp(tokens[0], "exit") == 0)
-			{
-			
-				exit(0);
-			}
-			else if (strcmp(tokens[0], "pwd") == 0)
-			{
-				size_t size = sizeof(char) * MAX_BUF;
-				char* buf = (char *) malloc(size);
-				char* cwd;
-				
+			if (errno != EINTR)
+				{
+					if (strcmp(tokens[0], "exit") == 0)
+					{
+					
+						exit(0);
+					}
+					else if (strcmp(tokens[0], "pwd") == 0)
+					{
+						size_t size = sizeof(char) * MAX_BUF;
+						char* buf = (char *) malloc(size);
+						char* cwd;
+						
 
-				cwd = getcwd(buf, size);
-				if (cwd == NULL)
-				{
-					perror("Error 01.3: Current directory not found.\n");
-				}
-				print(cwd);
-				print("\n");
-				free(buf);
-			}
-			else if (strcmp(tokens[0], "cd") == 0)
-			{
-				if (chdir(tokens[1]) == -1)
-				{
-					perror("Error 01.2: Invalid directory.\n");
-				}
-			}
-			else if (strcmp(tokens[0], "history") == 0)
-			{	
-				
-				hist();
-			}
+						cwd = getcwd(buf, size);
+						if (cwd == NULL)
+						{
+							perror("Error 01.3");
+						}
+						print(cwd);
+						print("\n");
+						free(buf);
+					}
+					else if (strcmp(tokens[0], "cd") == 0)
+					{
+						if (chdir(tokens[1]) == -1)
+						{
+							perror("Error 01.2");
+						}
+					}
+					else if (strcmp(tokens[0], "history") == 0)
+					{	
+						
+						hist();
+					}
+				}	
+			
+			
 		}
 }
 
 void hist_select(char* cmd[], _Bool inBackground)
 {
-	
+
 	if (cmd[0][1] == '!' && cmd[0][2] == '\0')
 	{
 		
@@ -305,6 +333,8 @@ void hist_select(char* cmd[], _Bool inBackground)
 		// print("prev_cmd=");
 		// print(prev_cmd);
 		// print("\n");
+		print(prev_cmd);
+		print("\n");
 		char* tokens[NUM_TOKENS];
 		int num_tokens;
 		num_tokens = tokenize_command(prev_cmd, tokens);
@@ -329,12 +359,32 @@ void hist_select(char* cmd[], _Bool inBackground)
 		{
 			num[i-1] = cmd[0][i];
 			i++;
+			// print_int(i);
 		}
-		num[i] = '\0';
+		num[i-1] = '\0';
 		cmd_num = atoi(num);
-		if (cmd_num == 0)
+		// print("cmd[0]=");
+		// print(cmd[0]);
+		// print("\n");
+		// print("num=");
+		// print(num);
+		// print("\n");
+		// print("cmd_num=");
+		// print_int(cmd_num);
+		// print("\n");
+		_Bool inHistory = false;
+		i = 0;
+		while(i < inc)
 		{
-			perror("Error 04: Not in history.\n");
+			if (cmdNum[i] == cmd_num)
+			{
+				inHistory = true;
+			}
+			i++;
+		}
+		if (!inHistory)
+		{
+			print("Error 04: Not in history.\n");
 		}
 		else
 		{
@@ -347,6 +397,8 @@ void hist_select(char* cmd[], _Bool inBackground)
 			// print("selected_cmd=");
 			// print(selected_cmd);
 			// print("\n");
+			print(selected_cmd);
+			print("\n");
 			char* tokens[NUM_TOKENS];
 			int num_tokens;
 			num_tokens = tokenize_command(selected_cmd, tokens);
@@ -366,8 +418,9 @@ void hist_select(char* cmd[], _Bool inBackground)
 	}
 	else
 	{
-		perror("Error 03: Invalid history commmand.\n");
+		print("Error 03: Invalid history commmand (NaN).\n");
 	}
+	
 }
 
 
@@ -393,7 +446,7 @@ int main(int argc, char* argv[])
 		cwd = getcwd(buf, size);
 		if (cwd == NULL)
 		{
-			perror("Error 01.1: Current directory not found.\n");
+			perror("Error 01.1");
 		}
 		print(cwd);
 		free(buf);
@@ -428,16 +481,37 @@ int main(int argc, char* argv[])
 		childPID = fork();
 		if (childPID == 0)
 		{
-			
-			if(execvp(tokens[0], tokens) < 0){ perror("Error 02: Invalid command or arguments."); exit(0);}
-			else
+			if(errno == EINTR)
 			{
 				exit(0);
-		
 			}
+			if (tokens[0] != NULL)
+			{
+				
+				
+				if (tokens[0][0] != '!')
+				{
+					if (strcmp(tokens[0], "exit") != 0 && strcmp(tokens[0], "pwd") != 0 && strcmp(tokens[0], "cd") != 0 && strcmp(tokens[0], "history") != 0)
+					{
+						if(execvp(tokens[0], tokens) < 0){ print("Error 02: Invalid command or arguments for command: "); print(tokens[0]); print("\n"); exit(0);}
+							
+						
+					}
+				}
+				
+				exit(0);
+			}
+
+			print(tokens[0]);
+			print(": ");
+			print("Unknown command.\n");
+				
+			exit(0);
+			
 		}
 		
-		
+		else
+		{
 		sigaction(SIGINT, &handler, NULL);
 		
 
@@ -445,13 +519,16 @@ int main(int argc, char* argv[])
 		
 		wait_for_child(in_background);
 		
-		sigaction(SIGINT, &handler, NULL);
+		//sigaction(SIGINT, &handler, NULL);
 
 		
 		if (tokens[0] != NULL)
 		{
 			
-		
+		if(errno != EINTR)
+		{
+
+
 			if (tokens[0][0] == '!')
 			{
 				hist_select(tokens, in_background);
@@ -467,14 +544,22 @@ int main(int argc, char* argv[])
 				}
 				else if (strcmp(tokens[0], "pwd") == 0)
 				{
+					char* buf = (char *) malloc(size);
+					char* cwd;
+					cwd = getcwd(buf, size);
+					if (cwd == NULL)
+					{
+						perror("Error 01.1");
+					}
 					print(cwd);
+					free(buf);
 					print("\n");
 				}
 				else if (strcmp(tokens[0], "cd") == 0)
 				{
 					if (chdir(tokens[1]) == -1)
 					{
-						perror("Error 01: Invalid directory.\n");
+						perror("Error 01");
 					}
 				}
 				else if (strcmp(tokens[0], "history") == 0)
@@ -483,10 +568,10 @@ int main(int argc, char* argv[])
 					hist();
 				}
 			}
-			
+			}
 		}
 		wait_for_child(in_background);
-		
+		}
 	}
 
 	return 0;

@@ -192,11 +192,10 @@ void queueSave(char* cmd[], _Bool inBackground)
 	// print("cmd[1]=");
 	// print(cmd[1]);
 	// print("\n");
-	print("history[inc]=");
-	print(history[inc]);
-	print("\n");
+	// print("history[inc]=");
+	// print(history[inc]);
+	// print("\n");
 	inc++;
-	print("weed\n");
 	// history[count-1] = cmd[1];
 	}
 	errno = 0;
@@ -227,7 +226,7 @@ void wait_for_child(_Bool inBackground)
 {
 	if (inBackground)
 		{
-			print("IN BACKGROUND.\n");
+			// print("IN BACKGROUND.\n");
 			while (waitpid(-1, NULL, WNOHANG) > 0);
 		}
 		else
@@ -242,7 +241,7 @@ void new_child_process(char* tokens[], _Bool inBackground)
 	child_pid = fork();
 	if (child_pid == 0)
 	{
-		if(execvp(tokens[0], tokens) < 0){ perror("KYS"); exit(0);}
+		if(execvp(tokens[0], tokens) < 0){ perror("Error 02.1: Invalid command or arguments."); exit(0);}
 			else
 			{
 			exit(0);
@@ -262,7 +261,7 @@ void hist_select_helper(char* tokens[], _Bool inBackground)
 		
 				if (strcmp(tokens[0], "exit") == 0)
 			{
-				print("free me boiii\n");
+			
 				exit(0);
 			}
 			else if (strcmp(tokens[0], "pwd") == 0)
@@ -275,7 +274,7 @@ void hist_select_helper(char* tokens[], _Bool inBackground)
 				cwd = getcwd(buf, size);
 				if (cwd == NULL)
 				{
-					perror("WTF\n");
+					perror("Error 01.3: Current directory not found.\n");
 				}
 				print(cwd);
 				print("\n");
@@ -285,12 +284,12 @@ void hist_select_helper(char* tokens[], _Bool inBackground)
 			{
 				if (chdir(tokens[1]) == -1)
 				{
-					perror("WTF You idiot\n");
+					perror("Error 01.2: Invalid directory.\n");
 				}
 			}
 			else if (strcmp(tokens[0], "history") == 0)
 			{	
-				// print("ENTEREEEREEEEEEE\n");
+				
 				hist();
 			}
 		}
@@ -303,15 +302,15 @@ void hist_select(char* cmd[], _Bool inBackground)
 	{
 		
 		char* prev_cmd = history[inc-1];
-		print("prev_cmd=");
-		print(prev_cmd);
-		print("\n");
+		// print("prev_cmd=");
+		// print(prev_cmd);
+		// print("\n");
 		char* tokens[NUM_TOKENS];
 		int num_tokens;
 		num_tokens = tokenize_command(prev_cmd, tokens);
-		print("Found tokens: ");
-		print_int(num_tokens);
-		print("\n");
+		// print("Found tokens: ");
+		// print_int(num_tokens);
+		// print("\n");
 		if (strcmp(tokens[num_tokens-1], "&") == 0)
 		{
 			inBackground = 1;
@@ -331,12 +330,11 @@ void hist_select(char* cmd[], _Bool inBackground)
 			num[i-1] = cmd[0][i];
 			i++;
 		}
-		print("HMMMMM\n");
 		num[i] = '\0';
 		cmd_num = atoi(num);
 		if (cmd_num == 0)
 		{
-			perror("Not in history.\n");
+			perror("Error 04: Not in history.\n");
 		}
 		else
 		{
@@ -346,15 +344,15 @@ void hist_select(char* cmd[], _Bool inBackground)
 				i++;
 			}
 			char* selected_cmd = history[i];
-			print("selected_cmd=");
-			print(selected_cmd);
-			print("\n");
+			// print("selected_cmd=");
+			// print(selected_cmd);
+			// print("\n");
 			char* tokens[NUM_TOKENS];
 			int num_tokens;
 			num_tokens = tokenize_command(selected_cmd, tokens);
-			print("Found tokens: ");
-			print_int(num_tokens);
-			print("\n");
+			// print("Found tokens: ");
+			// print_int(num_tokens);
+			// print("\n");
 			if (strcmp(tokens[num_tokens-1], "&") == 0)
 			{
 				inBackground = 1;
@@ -368,7 +366,7 @@ void hist_select(char* cmd[], _Bool inBackground)
 	}
 	else
 	{
-		perror("Get dabbed on.\n");
+		perror("Error 03: Invalid history commmand.\n");
 	}
 }
 
@@ -395,7 +393,7 @@ int main(int argc, char* argv[])
 		cwd = getcwd(buf, size);
 		if (cwd == NULL)
 		{
-			perror("WTF\n");
+			perror("Error 01.1: Current directory not found.\n");
 		}
 		print(cwd);
 		free(buf);
@@ -409,14 +407,14 @@ int main(int argc, char* argv[])
 		
 
 		// DEBUG: Dump out arguments:
-		for (int i = 0; tokens[i] != NULL; i++) {
-			write(STDOUT_FILENO, "   Token: ", strlen("   Token: "));
-			write(STDOUT_FILENO, tokens[i], strlen(tokens[i]));
-			write(STDOUT_FILENO, "\n", strlen("\n"));
-		}
-		if (in_background) {
-			write(STDOUT_FILENO, "Run in background.\n", strlen("Run in background.\n"));
-		}
+		// for (int i = 0; tokens[i] != NULL; i++) {
+		// 	write(STDOUT_FILENO, "   Token: ", strlen("   Token: "));
+		// 	write(STDOUT_FILENO, tokens[i], strlen(tokens[i]));
+		// 	write(STDOUT_FILENO, "\n", strlen("\n"));
+		// }
+		// if (in_background) {
+		// 	write(STDOUT_FILENO, "Run in background.\n", strlen("Run in background.\n"));
+		// }
 
 		/**
 		 * Steps For Basic Shell:
@@ -430,79 +428,25 @@ int main(int argc, char* argv[])
 		childPID = fork();
 		if (childPID == 0)
 		{
-			// queueSave(tokens, in_background);
-			// pid_t parent_pid = getppid();
-			// print("parent pid: ");
-			// print_int(parent_pid);
-			// print("\n");
-			// pid_t child_pid = getpid();
-			// print("child pid: ");
-			// print_int(child_pid);
-			// print("\n");			if (in_background)
-		// {
-		// 	print("IN BACKGROUND.\n");
-		// 	while (waitpid(-1, NULL, WNOHANG) > 0);
-		// }
-		// else
-		// {
-		// 	waitpid(-1, NULL, 0);
-		// }
-			// print_int(childPID);
-			// print("\n");
-			// print(tokens[0]);
-			// print("\n");
-			if(execvp(tokens[0], tokens) < 0){ perror("kill me."); exit(0);}
+			
+			if(execvp(tokens[0], tokens) < 0){ perror("Error 02: Invalid command or arguments."); exit(0);}
 			else
 			{
 				exit(0);
-		// 	if (strcmp(tokens[0], "history") == 0)
-		// {
-		// 	hist();
-		// }
-		// else if (tokens[0][0] == '!')
-		// {
-		// 	hist_select(tokens);
-		// }
-
-		// 	if (in_background)
-		// {
-		// 	while (waitpid(-1, NULL, WNOHANG) > 0);
-		// }
-		// else
-		// {
-		// 	waitpid(-1, NULL, 0);
-		// }
 		
-		// }
 			}
 		}
 		
-		// else
-
-		// {
-			// pid_t parent_pid = getpid();
-			// print("Current pid: ");
-			// print_int(parent_pid);
-			// print("\n");
-		// 			if (in_background)
-		// {
-		// 	print("IN BACKGROUND.\n");
-		// 	while (waitpid(-1, NULL, WNOHANG) > 0);
-		// }
-		// else
-		// {
-		// 	waitpid(-1, NULL, 0);
-		// }
-
+		
 		sigaction(SIGINT, &handler, NULL);
-		// wait_for_child(in_background);
 		
-		
+
 
 		
 		wait_for_child(in_background);
 		
 		sigaction(SIGINT, &handler, NULL);
+
 		
 		if (tokens[0] != NULL)
 		{
@@ -514,12 +458,12 @@ int main(int argc, char* argv[])
 			}
 			else
 			{
-					queueSave(tokens, in_background);
-					// print("CMON BROOOOOOO");
-					if (strcmp(tokens[0], "exit") == 0)
+				queueSave(tokens, in_background);
+			
+				if (strcmp(tokens[0], "exit") == 0)
 				{
-					print("free me boiii\n");
-					// exit(0);
+					
+					exit(0);
 				}
 				else if (strcmp(tokens[0], "pwd") == 0)
 				{
@@ -530,30 +474,19 @@ int main(int argc, char* argv[])
 				{
 					if (chdir(tokens[1]) == -1)
 					{
-						perror("WTF You idiot\n");
+						perror("Error 01: Invalid directory.\n");
 					}
 				}
 				else if (strcmp(tokens[0], "history") == 0)
 				{	
-					// print("ENTEREEEREEEEEEE\n");
+					
 					hist();
 				}
 			}
 			
 		}
 		wait_for_child(in_background);
-		// if (in_background)
-		// {
-		// 	print("IN BACKGROUND.\n");
-		// 	while (waitpid(-1, NULL, WNOHANG) > 0);
-		// }
-		// else
-		// {
-		// 	waitpid(-1, NULL, 0);
-		// }
-		// print("SWAG\n");
-		// }
-		// free(buf);
+		
 	}
 
 	return 0;

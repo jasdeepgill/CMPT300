@@ -9,7 +9,7 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
-
+#include <ctype.h>
 
 #define COMMAND_LENGTH 1024
 #define NUM_TOKENS (COMMAND_LENGTH / 2 + 1)
@@ -103,12 +103,6 @@ void read_command(char *buff, char *tokens[], _Bool *in_background)
 		*in_background = true;
 		tokens[token_count - 1] = 0;
 	}
-}
-
-void ex(char* buf)
-{
-	free(buf);
-	exit(0);
 }
 
 void print(char* s)
@@ -215,20 +209,142 @@ void hist()
 	}
 }
 
-void hist_select(char* cmd[])
+void wait_for_child(_Bool inBackground)
 {
-	pid_t childPID;
-	childPID = fork();
-	if (childPID == 0)
-	{
-		if (cmd[0][1] == '!' && cmd[0][2] == '\0')
+	if (inBackground)
 		{
-			
+			print("IN BACKGROUND.\n");
+			while (waitpid(-1, NULL, WNOHANG) > 0);
+		}
+		else
+		{
+			waitpid(-1, NULL, 0);
+		}
+}
+
+void new_child_process(char* tokens[], _Bool inBackground)
+{
+	pid_t child_pid;
+	child_pid = fork();
+	if (child_pid == 0)
+	{
+		if(execvp(tokens[0], tokens) < 0){ perror("KYS"); exit(0);}
+			else
+			{
+			exit(0);
 		}
 	}
 	else
 	{
+		wait_for_child(inBackground);
+	}
+}
 
+void hist_select_helper(char* tokens[], _Bool inBackground)
+{
+	if (tokens[0] != NULL)
+		{
+			
+		
+				if (strcmp(tokens[0], "exit") == 0)
+			{
+				print("free me boiii\n");
+				exit(0);
+			}
+			else if (strcmp(tokens[0], "pwd") == 0)
+			{
+				size_t size = sizeof(char) * MAX_BUF;
+				char* buf = (char *) malloc(size);
+				char* cwd;
+				
+
+				cwd = getcwd(buf, size);
+				if (cwd == NULL)
+				{
+					perror("WTF\n");
+				}
+				print(cwd);
+				print("\n");
+				free(buf);
+			}
+			else if (strcmp(tokens[0], "cd") == 0)
+			{
+				if (chdir(tokens[1]) == -1)
+				{
+					perror("WTF You idiot\n");
+				}
+			}
+			else if (strcmp(tokens[0], "history") == 0)
+			{	
+				// print("ENTEREEEREEEEEEE\n");
+				hist();
+			}
+		}
+}
+
+void hist_select(char* cmd[], _Bool inBackground)
+{
+	
+	if (cmd[0][1] == '!' && cmd[0][2] == '\0')
+	{
+		
+		char* prev_cmd = history[inc-1];
+		print("prev_cmd=");
+		print(prev_cmd);
+		print("\n");
+		char* tokens[NUM_TOKENS];
+		int num_tokens;
+		num_tokens = tokenize_command(prev_cmd, tokens);
+		print("Found tokens: ");
+		print_int(num_tokens);
+		print("\n");
+		new_child_process(tokens, inBackground);
+		hist_select_helper(tokens, inBackground);
+	}
+	else if (isdigit(cmd[0][1]))
+	{
+
+		char num[1024];
+		int cmd_num;
+		int i = 1;
+		while(cmd[0][i] != '\0')
+		{
+			num[i-1] = cmd[0][i];
+			i++;
+		}
+		print("HMMMMM\n");
+		num[i] = '\0';
+		cmd_num = atoi(num);
+		if (cmd_num == 0)
+		{
+			perror("Not in history.\n");
+		}
+		else
+		{
+			i = 0;
+			while(cmdNum[i] != cmd_num)
+			{
+				i++;
+			}
+			char* selected_cmd = history[i];
+			print("selected_cmd=");
+			print(selected_cmd);
+			print("\n");
+			char* tokens[NUM_TOKENS];
+			int num_tokens;
+			num_tokens = tokenize_command(selected_cmd, tokens);
+			print("Found tokens: ");
+			print_int(num_tokens);
+			print("\n");
+			new_child_process(tokens, inBackground);
+			hist_select_helper(tokens, inBackground);
+		}
+		
+
+	}
+	else
+	{
+		perror("Get dabbed on.\n");
 	}
 }
 
@@ -254,6 +370,7 @@ int main(int argc, char* argv[])
 			perror("WTF\n");
 		}
 		print(cwd);
+		free(buf);
 		// Get command
 		// Use write because we need to use read() to work with
 		// signals, and read() is incompatible with printf().
@@ -286,22 +403,30 @@ int main(int argc, char* argv[])
 		if (childPID == 0)
 		{
 			// queueSave(tokens, in_background);
-			pid_t parent_pid = getppid();
-			print("parent pid: ");
-			print_int(parent_pid);
-			print("\n");
-			pid_t child_pid = getpid();
-			print("child pid: ");
-			print_int(child_pid);
-			print("\n");
+			// pid_t parent_pid = getppid();
+			// print("parent pid: ");
+			// print_int(parent_pid);
+			// print("\n");
+			// pid_t child_pid = getpid();
+			// print("child pid: ");
+			// print_int(child_pid);
+			// print("\n");			if (in_background)
+		// {
+		// 	print("IN BACKGROUND.\n");
+		// 	while (waitpid(-1, NULL, WNOHANG) > 0);
+		// }
+		// else
+		// {
+		// 	waitpid(-1, NULL, 0);
+		// }
 			// print_int(childPID);
 			// print("\n");
-			print(tokens[0]);
-			print("\n");
-			if(execvp(tokens[0], tokens) < 0){ perror("kill me."); ex(buf);}
-		else
-		{
-			ex(buf);
+			// print(tokens[0]);
+			// print("\n");
+			if(execvp(tokens[0], tokens) < 0){ perror("kill me.");}
+			else
+			{
+			// exit(0);
 		// 	if (strcmp(tokens[0], "history") == 0)
 		// {
 		// 	hist();
@@ -321,7 +446,8 @@ int main(int argc, char* argv[])
 		// }
 		
 		// }
-		}}
+			}
+		}
 		
 		// else
 
@@ -330,51 +456,66 @@ int main(int argc, char* argv[])
 			// print("Current pid: ");
 			// print_int(parent_pid);
 			// print("\n");
-					if (in_background)
-		{
-			print("IN BACKGROUND.\n");
-			while (waitpid(-1, NULL, WNOHANG) > 0);
-		}
-		else
-		{
-			waitpid(-1, NULL, 0);
-		}
+		// 			if (in_background)
+		// {
+		// 	print("IN BACKGROUND.\n");
+		// 	while (waitpid(-1, NULL, WNOHANG) > 0);
+		// }
+		// else
+		// {
+		// 	waitpid(-1, NULL, 0);
+		// }
+		wait_for_child(in_background);
 		if (tokens[0] != NULL)
 		{
 			
 		
-			queueSave(tokens, in_background);
-			// print("CMON BROOOOOOO");
-			if (strcmp(tokens[0], "exit") == 0)
-		{
-			print("free me boiii\n");
-			ex(buf);
-		}
-		else if (strcmp(tokens[0], "pwd") == 0)
-		{
-			print(cwd);
-			print("\n");
-		}
-		else if (strcmp(tokens[0], "cd") == 0)
-		{
-			if (chdir(tokens[1]) == -1)
+			if (tokens[0][0] == '!')
 			{
-				perror("WTF You idiot\n");
+				hist_select(tokens, in_background);
 			}
+			else
+			{
+					queueSave(tokens, in_background);
+					// print("CMON BROOOOOOO");
+					if (strcmp(tokens[0], "exit") == 0)
+				{
+					print("free me boiii\n");
+					// exit(0);
+				}
+				else if (strcmp(tokens[0], "pwd") == 0)
+				{
+					print(cwd);
+					print("\n");
+				}
+				else if (strcmp(tokens[0], "cd") == 0)
+				{
+					if (chdir(tokens[1]) == -1)
+					{
+						perror("WTF You idiot\n");
+					}
+				}
+				else if (strcmp(tokens[0], "history") == 0)
+				{	
+					// print("ENTEREEEREEEEEEE\n");
+					hist();
+				}
+			}
+			
 		}
-		else if (strcmp(tokens[0], "history") == 0)
-		{	
-			// print("ENTEREEEREEEEEEE\n");
-			hist();
-		}
-		else if (tokens[0][0] == '!')
-		{
-			hist_select(tokens);
-		}
-	}
+		wait_for_child(in_background);
+		// if (in_background)
+		// {
+		// 	print("IN BACKGROUND.\n");
+		// 	while (waitpid(-1, NULL, WNOHANG) > 0);
+		// }
+		// else
+		// {
+		// 	waitpid(-1, NULL, 0);
+		// }
 		// print("SWAG\n");
 		// }
-		free(buf);
+		// free(buf);
 	}
 
 	return 0;

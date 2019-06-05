@@ -365,8 +365,8 @@ void hist_select(char* cmd[], _Bool inBackground)
 			// print("prev_cmd=");
 			// print(prev_cmd);
 			// print("\n");
-			// print(prev_cmd);
-			// print("\n");
+			print(prev_cmd);
+			print("\n");
 			char* tokens[NUM_TOKENS];
 			int num_tokens;
 			num_tokens = tokenize_command(prev_cmd, tokens);
@@ -516,9 +516,9 @@ int main(int argc, char* argv[])
 		// 	write(STDOUT_FILENO, tokens[i], strlen(tokens[i]));
 		// 	write(STDOUT_FILENO, "\n", strlen("\n"));
 		// }
-		// if (in_background) {
-		// 	write(STDOUT_FILENO, "Run in background.\n", strlen("Run in background.\n"));
-		// }
+		if (in_background) {
+			write(STDOUT_FILENO, "Run in background.\n", strlen("Run in background.\n"));
+		}
 
 		/**
 		 * Steps For Basic Shell:

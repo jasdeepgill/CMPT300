@@ -115,12 +115,26 @@ void print(char* s)
 	write(STDOUT_FILENO, s, strlen(s));
 }
 
+void print_char(char c)
+{
+	char s[1024];
+	s[0] = c;
+	s[1] = '\0';
+	write(STDOUT_FILENO, s, strlen(s));
+}
+
 void print_int(int i)
 {
 	char a[1024];
 	sprintf(a, "%d", i);
 	print(a);
 }
+
+void print_char_by_int(char c)
+{
+	int i = (int) c;
+	print_int(i);
+} 
 
 void clearHistorySlot(int index)
 {
@@ -183,6 +197,15 @@ void queueSave(char* cmd[], _Bool inBackground)
 		j++;
 		i++;
 	}
+	// print("history[inc-1]=");
+	// print(history[inc-1]);
+	// print("\n");
+	// print("j=");
+	// print_int(j);
+	// print("\n");
+	// print("history[inc][j-6]=");
+	// print_char_by_int(history[inc][j-6]);
+	// print("\n");
 	if (inBackground)
 		{
 			history[inc][j] = '&'; 
@@ -190,7 +213,7 @@ void queueSave(char* cmd[], _Bool inBackground)
 		}	
 	else
 	{
-		history[inc][j-1] = '\0';
+		history[inc][j] = '\0';
 	}
 	// print("cmd[1]=");
 	// print(cmd[1]);
@@ -330,12 +353,20 @@ void hist_select(char* cmd[], _Bool inBackground)
 		if (cmd[0][1] == '!' && cmd[0][2] == '\0')
 		{
 			
-			char* prev_cmd = history[inc-1];
+			// char* prev_cmd = history[inc-1];
+			char prev_cmd[1024];
+			int h = 0;
+			while(history[inc-1][h] != '\0')
+			{
+				prev_cmd[h] = history[inc-1][h];
+				h++;
+			}
+			prev_cmd[h] = '\0';
 			// print("prev_cmd=");
 			// print(prev_cmd);
 			// print("\n");
-			print(prev_cmd);
-			print("\n");
+			// print(prev_cmd);
+			// print("\n");
 			char* tokens[NUM_TOKENS];
 			int num_tokens;
 			num_tokens = tokenize_command(prev_cmd, tokens);
@@ -348,6 +379,9 @@ void hist_select(char* cmd[], _Bool inBackground)
 				tokens[num_tokens-1] = 0;
 			}
 			queueSave(tokens, inBackground);
+			// print("history[inc-2]=");
+			// print(history[inc-2]);
+			// print("\n");
 			new_child_process(tokens, inBackground);
 			hist_select_helper(tokens, inBackground);
 		}
@@ -395,7 +429,15 @@ void hist_select(char* cmd[], _Bool inBackground)
 				{
 					i++;
 				}
-				char* selected_cmd = history[i];
+				// char* selected_cmd = history[i];
+				char selected_cmd[1024];
+				int l = 0;
+				while(history[i][l] != '\0')
+				{
+					selected_cmd[l] = history[i][l];
+					l++;
+				}
+				selected_cmd[l] = '\0';
 				// print("selected_cmd=");
 				// print(selected_cmd);
 				// print("\n");

@@ -248,18 +248,32 @@ void handle_SIGINT()
 	return;
 }
 
-void wait_for_child(_Bool inBackground)
+void wait_for_child(pid_t pid, _Bool inBackground)
 {
-
+	int status;
 	if (inBackground)
 		{
 			// print("IN BACKGROUND.\n");
-			while (waitpid(-1, NULL, WNOHANG) > 0);
+			while (waitpid(-1, &status, WNOHANG) > 0);
 		}
 		else
 		{
-			waitpid(-1, NULL, 0);
+			// return waitpid(pid, &status, 0);
+			waitpid(pid, &status, 0);
 		}
+	// status = 0 child terminated normally
+	// status = 1 child terminated with error
+	// print("pid=");
+	// print_int(pid);
+	// print("\n");
+	// print("Status of child: ");
+	// print_int(status);
+	// print("\n");
+	// print("Exit status: ");
+	// status = WIFEXITED(status);
+	// print_int(status);
+	// print("\n");
+	// return 100;
 }
 
 void new_child_process(char* tokens[], _Bool inBackground)
@@ -297,7 +311,7 @@ void new_child_process(char* tokens[], _Bool inBackground)
 	}
 	else
 	{
-		wait_for_child(inBackground);
+		wait_for_child(child_pid, inBackground);
 	}
 }
 
@@ -530,6 +544,9 @@ int main(int argc, char* argv[])
 		 */
 
 		childPID = fork();
+		// print("Child pid: ");
+		// print_int(childPID);
+		// print("\n");
 		if (childPID == 0)
 		{
 			if(errno == EINTR)
@@ -565,16 +582,39 @@ int main(int argc, char* argv[])
 		{
 		
 		
-
-
-		
-		wait_for_child(in_background);
-		
+		// pid_t stat;
+		// stat = waitpid(childPID, NULL, 0);
+		// print("wtf\n");
+		// wait_for_child(childPID, in_background);
+		// wait_for_child(childPID, in_background);
+		wait_for_child(childPID, in_background);
+		// if (stat == 0)
+		// {
+		// 	print("Child terminated normally.\n");
+		// }
+		// else if (stat == -1)
+		// {
+		// 	print("Child terminated with error.\n");
+		// }
+		// print("Child pid: ");
+		// print_int(childPID);
+		// print("\n");
+		// pid_t pid1 = wait_for_child(childPID, in_background);
+		// print("Done waiting for pid: ");
+		// print_int(pid1);
+		// print("\n");
+		// pid_t pid2 = wait_for_child(childPID, in_background);
+		// print("Done waiting for pid: ");
+		// print_int(pid2);
+		// print("\n");
 
 		
 		if (tokens[0] != NULL)
 		{
 			
+		// print("ERRNO: ");
+		// print_int(errno);
+		// print("\n");
 		if(errno != EINTR)
 		{
 
@@ -619,8 +659,10 @@ int main(int argc, char* argv[])
 				}
 			}
 			}
+			
 		}
-		wait_for_child(in_background);
+		errno = 0;
+		// wait_for_child(childPID, in_background);
 		}
 	}
 

@@ -346,7 +346,7 @@ void hist_select_helper(char* tokens[], _Bool inBackground)
 					{
 						if (chdir(tokens[1]) == -1)
 						{
-							perror("Error 01.2");
+							perror("Error 01.4");
 						}
 					}
 					else if (strcmp(tokens[0], "history") == 0)
@@ -511,7 +511,7 @@ int main(int argc, char* argv[])
 		cwd = getcwd(buf, size);
 		if (cwd == NULL)
 		{
-			perror("Error 01.1");
+			perror("Error 01.2");
 		}
 		print(cwd);
 		free(buf);

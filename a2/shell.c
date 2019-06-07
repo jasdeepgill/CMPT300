@@ -294,7 +294,7 @@ void new_child_process(char* tokens[], _Bool inBackground)
 				{
 					if (strcmp(tokens[0], "exit") != 0 && strcmp(tokens[0], "pwd") != 0 && strcmp(tokens[0], "cd") != 0 && strcmp(tokens[0], "history") != 0)
 					{
-						if(execvp(tokens[0], tokens) < 0){ print("Error 02.1: Invalid command or arguments for command: "); print(tokens[0]); print("\n"); exit(0);}
+						if(execvp(tokens[0], tokens) < 0){ print("Error 02.1: Invalid command or arguments for command: "); print(tokens[0]); print("\n"); exit(-1);}
 							
 						
 					}
@@ -561,7 +561,7 @@ int main(int argc, char* argv[])
 				{
 					if (strcmp(tokens[0], "exit") != 0 && strcmp(tokens[0], "pwd") != 0 && strcmp(tokens[0], "cd") != 0 && strcmp(tokens[0], "history") != 0)
 					{
-						if(execvp(tokens[0], tokens) < 0){ print("Error 02: Invalid command or arguments for command: "); print(tokens[0]); print("\n"); exit(0);}
+						if(execvp(tokens[0], tokens) < 0){ print("Error 02: Invalid command or arguments for command: "); print(tokens[0]); print("\n"); exit(-1);}
 							
 						
 					}

@@ -407,6 +407,11 @@ void hist_select(char* cmd[], _Bool inBackground)
 			int i = 1;
 			while(cmd[0][i] != '\0')
 			{
+				if (isalpha(cmd[0][i]))
+				{
+					print("Command does not exist.\n");
+					return;
+				}
 				num[i-1] = cmd[0][i];
 				i++;
 				// print_int(i);

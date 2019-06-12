@@ -666,6 +666,10 @@ int main(int argc, char* argv[])
 			}
 			
 		}
+		else if (tokens[0] == NULL && in_background)
+		{
+			print("&: Unknown command.\n");
+		}
 		errno = 0;
 		// wait_for_child(childPID, in_background);
 		}

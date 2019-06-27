@@ -27,11 +27,11 @@ void* factory_thread_function(void* arg) {
     while (!stop_thread) {
     	candy_t factory_data = *((candy_t *) arg);
     	int rand_wait_time;
-    	rand_wait_time = (rand() % (RAND_UPPER - RAND_LOWER + 1)) + RAND_LOWER
+    	rand_wait_time = (rand() % (RAND_UPPER - RAND_LOWER + 1)) + RAND_LOWER;
     	printf("\tFactory %d ships candy & waits %ds\n", factory_data.factory_number, rand_wait_time);
     	void *new_candy = malloc(sizeof(void*));
+    	factory_data.time_stamp_in_ms = current_time_in_ms();
     	new_candy = &factory_data;
-    	new_candy->time_stamp_in_ms = current_time_in_ms();
     	bbuff_blocking_insert(new_candy);
     	sleep(rand_wait_time);
     }
@@ -45,7 +45,8 @@ void* factory_thread_function(void* arg) {
 void* kid_thread_function(void* arg)
 {
 	do{
-		candy_t = *((candy_t *) bbuff_blocking_extract());
+		candy_t extracted_candy = *((candy_t *) bbuff_blocking_extract());
+		printf("Got candy from factory %d\n", extracted_candy.factory_number);
 		sleep(rand() % 2);
 	}while(true);
 }
@@ -85,7 +86,7 @@ int main(int argc, char const *argv[])
 	// pthread_mutex_init(&lock, NULL);
 	srand(time(0));
 	bbuff_init();
-	stats_init(factories);
+	// stats_init(factories);
 	for (int i = 0; i < factories; ++i)
 	{
 		pthread_t f_thread_id;
@@ -97,7 +98,7 @@ int main(int argc, char const *argv[])
 	for (int j = 0; j < kids; ++j)
 	{
 		pthread_t k_thread_id;
-		pthread_create(&k_thread_id, NULL, NULL);
+		pthread_create(&k_thread_id, NULL, kid_thread_function, NULL);
 		k_id_list[j] = k_thread_id;
 	}
 	for (int k = 0; k < seconds; ++k)
@@ -106,14 +107,14 @@ int main(int argc, char const *argv[])
 		sleep(1);
 	}
 	printf("Stopping candy factories...\n");
-	stop_thread == true;
+	stop_thread = true;
 	for (int n = 0; n < factories; ++n)
 	{
 		pthread_join(f_id_list[n], NULL);
 		printf("Candy-factory %d done\n", n);
 	}
 	// printf("Waiting for all candy to be consumed...\n");
-	while(!bbuf_is_empty)
+	while(!bbuff_is_empty())
 	{
 		printf("Waiting for all candy to be consumed...\n");
 		sleep(1);
@@ -121,8 +122,8 @@ int main(int argc, char const *argv[])
 	printf("Stopping kids...\n");
 	for (int m = 0; m < kids; ++m)
 	{
-		pthread_cancel(k_thread_id[m]);
-		pthread_join(k_thread_id[m], NULL);
+		pthread_cancel(k_id_list[m]);
+		pthread_join(k_id_list[m], NULL);
 	}
 	return 0;
 }

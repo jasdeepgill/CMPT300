@@ -32,7 +32,7 @@ void* factory_thread_function(void* arg) {
     	candy_t *new_candy = malloc(sizeof(candy_t));
     	new_candy->factory_number = factory_data.factory_number;
     	new_candy->time_stamp_in_ms = current_time_in_ms();
-    	bbuff_blocking_insert(new_candy);
+    	bbuff_blocking_insert((void *) new_candy);
     	sleep(rand_wait_time);
     }
     // printf("BRUH\n");
@@ -45,7 +45,7 @@ void* factory_thread_function(void* arg) {
 void* kid_thread_function(void* arg)
 {
 	do{
-		candy_t *extracted_candy =  bbuff_blocking_extract();
+		candy_t *extracted_candy = ((candy_t *) bbuff_blocking_extract());
 		// double delay = current_time_in_ms() - extracted_candy.time_stamp_in_ms;
 		// stats_record_consume(extracted_candy.factory_number, delay);
 		printf("Got candy from factory %d, made at %lf\n", extracted_candy->factory_number, extracted_candy->time_stamp_in_ms);

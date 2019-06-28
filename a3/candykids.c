@@ -29,9 +29,9 @@ void* factory_thread_function(void* arg) {
     	int rand_wait_time;
     	rand_wait_time = (rand() % (RAND_UPPER - RAND_LOWER + 1)) + RAND_LOWER;
     	printf("\tFactory %d ships candy & waits %ds\n", factory_data.factory_number, rand_wait_time);
-    	void *new_candy = malloc(sizeof(void*));
-    	factory_data.time_stamp_in_ms = current_time_in_ms();
-    	new_candy = &factory_data;
+    	candy_t *new_candy = malloc(sizeof(candy_t));
+    	new_candy->factory_number = factory_data.factory_number;
+    	new_candy->time_stamp_in_ms = current_time_in_ms();
     	bbuff_blocking_insert(new_candy);
     	sleep(rand_wait_time);
     }
@@ -45,8 +45,10 @@ void* factory_thread_function(void* arg) {
 void* kid_thread_function(void* arg)
 {
 	do{
-		candy_t extracted_candy = *((candy_t *) bbuff_blocking_extract());
-		printf("Got candy from factory %d\n", extracted_candy.factory_number);
+		candy_t *extracted_candy =  bbuff_blocking_extract();
+		// double delay = current_time_in_ms() - extracted_candy.time_stamp_in_ms;
+		// stats_record_consume(extracted_candy.factory_number, delay);
+		printf("Got candy from factory %d, made at %lf\n", extracted_candy->factory_number, extracted_candy->time_stamp_in_ms);
 		sleep(rand() % 2);
 	}while(true);
 }
@@ -89,25 +91,22 @@ int main(int argc, char const *argv[])
 	// stats_init(factories);
 	for (int i = 0; i < factories; ++i)
 	{
-		pthread_t f_thread_id;
 		data[i].factory_number = i;
 		// data[i].time_stamp_in_ms = current_time_in_ms();
-		pthread_create(&f_thread_id, NULL, factory_thread_function, &data[i]);
-		f_id_list[i] = f_thread_id;
+		pthread_create(&f_id_list[i], NULL, factory_thread_function, &data[i]);
 	}
 	for (int j = 0; j < kids; ++j)
 	{
-		pthread_t k_thread_id;
-		pthread_create(&k_thread_id, NULL, kid_thread_function, NULL);
-		k_id_list[j] = k_thread_id;
+		pthread_create(&k_id_list[j], NULL, kid_thread_function, NULL);
 	}
 	for (int k = 0; k < seconds; ++k)
 	{
 		printf("Time %ds:\n", k);
 		sleep(1);
 	}
-	printf("Stopping candy factories...\n");
+	
 	stop_thread = true;
+	printf("Stopping candy factories...\n");
 	for (int n = 0; n < factories; ++n)
 	{
 		pthread_join(f_id_list[n], NULL);

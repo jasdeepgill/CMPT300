@@ -12,9 +12,9 @@ void* bbuff_blocking_extract(void);
 _Bool bbuff_is_empty(void);
 
 static void* bbuff[BUFFER_SIZE];
-static sem_t mutex;
-static sem_t num_items;
-static sem_t empty_slots;
+sem_t mutex;
+sem_t num_items;
+sem_t empty_slots;
 
 void bbuff_init(void)
 {
@@ -29,24 +29,26 @@ void bbuff_init(void)
 
 void bbuff_blocking_insert(void* item)
 {
-	do{
+	
 	sem_wait(&empty_slots);
 	sem_wait(&mutex);
 	int i = 0;
 	while(bbuff[i] != NULL) i++;
 	bbuff[i] = item;
+	printf("Insert i = %d\n", i);
 	sem_post(&mutex);
 	sem_post(&num_items);
-	}while(true);
+	
 }
 
 void* bbuff_blocking_extract(void)
 {
-	do{
+	
 	sem_wait(&num_items);
 	sem_wait(&mutex);
 	int i = 0;
 	while(bbuff[i] == NULL && !bbuff_is_empty()) i++;
+	printf("Extract i = %d\n", i);
 	void *temp = malloc(sizeof(void*));
 	if (temp == NULL)
 	{
@@ -58,7 +60,7 @@ void* bbuff_blocking_extract(void)
 	sem_post(&mutex);
 	sem_post(&empty_slots);
 	return temp;
-	}while(true);
+	
 }
 
 _Bool bbuff_is_empty(void)

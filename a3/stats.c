@@ -29,26 +29,7 @@ static factory_info* array;
 void stats_init(int num_producers)
 {
 	array = malloc(num_producers*sizeof(factory_info));
-	// factory_info info[sizeof(factory_info)*num_producers];
-	// array->factory_number = 0;
-	// array->Made = 0;
-	// array->Eaten = 0;
-	// array->num = 0;
-	// array->sum_delay = 0;
-	// array->min_delay = INFINITY;
-	// array->max_delay = -INFINITY;
-	// array->avg_delay = 0;
-	// array = info;
 	producers = num_producers;
-	// printf("Producers: %d\n", producers);
-	// printf("Size of array: %lu\n", sizeof(array));
-	// printf("Factory number: %d\n", array->factory_number);
-	// printf("Made: %d\n", array->Made);
-	// printf("eaten: %d\n", array->Eaten);
-	// printf("delay: %lf\n", array->delay_in_ms);
-	// printf("min: %lf\n", array->min_delay);
-	// printf("max: %lf\n", array->max_delay);
-	// printf("avg: %lf\n", array->avg_delay);
 	for (int i = 0; i < num_producers; ++i)
 	{
 		array[i].factory_number = i;
@@ -59,7 +40,6 @@ void stats_init(int num_producers)
 		array[i].min_delay = INFINITY;
 		array[i].max_delay = -INFINITY;
 		array[i].avg_delay = 0;
-		// printf("factory number: %d\n", array[i].factory_number);
 	}
 	return;
 }

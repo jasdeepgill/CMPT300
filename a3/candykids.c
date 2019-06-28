@@ -20,7 +20,6 @@ typedef struct  {
     double time_stamp_in_ms;
 } candy_t;
 
-// pthread_mutex_t lock;
 
 _Bool stop_thread = false;
 void* factory_thread_function(void* arg) {
@@ -35,10 +34,6 @@ void* factory_thread_function(void* arg) {
     	bbuff_blocking_insert((void *) new_candy);
     	sleep(rand_wait_time);
     }
-    // printf("BRUH\n");
-    // candy_t factory_data = *((candy_t *) arg);
-    // printf("%d %lf\n", factory_data.factory_number, factory_data.time_stamp_in_ms);
-    // free(arg);
     return NULL;
 }
 
@@ -87,14 +82,12 @@ int main(int argc, char const *argv[])
 	}
 
 	candy_t data[MAX_THREADS];
-	// pthread_mutex_init(&lock, NULL);
 	srand(time(0));
 	bbuff_init();
 	stats_init(factories);
 	for (int i = 0; i < factories; ++i)
 	{
 		data[i].factory_number = i;
-		// data[i].time_stamp_in_ms = current_time_in_ms();
 		pthread_create(&f_id_list[i], NULL, factory_thread_function, &data[i]);
 	}
 	for (int j = 0; j < kids; ++j)
@@ -114,7 +107,6 @@ int main(int argc, char const *argv[])
 		pthread_join(f_id_list[n], NULL);
 		printf("Candy-factory %d done\n", n);
 	}
-	// printf("Waiting for all candy to be consumed...\n");
 	while(!bbuff_is_empty())
 	{
 		printf("Waiting for all candy to be consumed...\n");

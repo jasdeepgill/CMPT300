@@ -73,7 +73,7 @@ void stats_record_consumed(int factory_number, double delay_in_ms)
 	{
 		if(array[j].factory_number == factory_number)
 		{
-			printf("Factory: %d\nDelay: %lf\n", factory_number,delay_in_ms);
+			// printf("Factory: %d\nDelay: %lf\n", factory_number,delay_in_ms);
 			array[j].num++;
 			array[j].sum_delay += delay_in_ms; 
 			array[j].Eaten++;

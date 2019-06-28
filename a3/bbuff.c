@@ -46,12 +46,7 @@ void* bbuff_blocking_extract(void)
 	sem_wait(&num_items);
 	sem_wait(&mutex);
 	// printf("Extract at %d\n", tail);
-	void *temp = malloc(sizeof(void*));
-	if (temp == NULL)
-	{
-		printf("Error: Could not allocate in bbuff_blocking_extract().\n");
-		exit(-1);
-	}
+	void *temp;
 	temp = bbuff[tail-1];
 	bbuff[tail-1] = NULL;
 	tail--;

@@ -77,7 +77,7 @@ int main(int argc, char const *argv[])
 	
 	if (factories <= 0 || kids <= 0 || seconds <= 0)
 	{
-		printf("Error: value less or equal to zero.\n");
+		printf("Error: All arguments must be positive.\n");
 		exit(-1);
 	}
 

@@ -68,7 +68,7 @@ void stats_record_produced(int factory_number)
 
 void stats_record_consumed(int factory_number, double delay_in_ms)
 {
-	printf("Factory: %d\nDelay: %lf\n", factory_number, delay_in_ms);
+	// printf("Factory: %d\nDelay: %lf\n", factory_number, delay_in_ms);
 	int j = 0;
 	while(j != producers)
 	{

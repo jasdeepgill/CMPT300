@@ -68,12 +68,12 @@ void stats_record_produced(int factory_number)
 
 void stats_record_consumed(int factory_number, double delay_in_ms)
 {
+	printf("Factory: %d\nDelay: %lf\n", factory_number, delay_in_ms);
 	int j = 0;
 	while(j != producers)
 	{
 		if(array[j].factory_number == factory_number)
 		{
-			// printf("Factory: %d\nDelay: %lf\n", factory_number,delay_in_ms);
 			array[j].num++;
 			array[j].sum_delay += delay_in_ms; 
 			array[j].Eaten++;
@@ -97,6 +97,14 @@ void stats_display(void)
 	printf("%8s%10s%10s%15s%15s%15s\n", "Factory#", "#Made", "#Eaten", "Min Delay[ms]", "Avg Delay[ms]", "Max Delay[ms]");
 	for (int i = 0; i < producers; ++i)
 	{
-		printf("%8d%10d%10d%15lf%15lf%15lf\n",array[i].factory_number,array[i].Made,array[i].Eaten,array[i].min_delay,array[i].avg_delay,array[i].max_delay);
+		if(array[i].Eaten != array[i].Made)
+		{
+			printf("ERROR: Mismatch between number made and eaten.\n");
+		}
+		else
+		{
+			printf("%8d%10d%10d%15lf%15lf%15lf\n",array[i].factory_number,array[i].Made,array[i].Eaten,array[i].min_delay,array[i].avg_delay,array[i].max_delay);
+		}
+
 	}
 }

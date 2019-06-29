@@ -75,9 +75,9 @@ int main(int argc, char const *argv[])
 		exit(-1);
 	}
 	
-	if (factories < 0 || kids < 0 || seconds < 0)
+	if (factories <= 0 || kids <= 0 || seconds <= 0)
 	{
-		printf("Error: value less than zero.\n");
+		printf("Error: value less or equal 0 zero.\n");
 		exit(-1);
 	}
 

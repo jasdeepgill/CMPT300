@@ -103,7 +103,7 @@ void stats_display(void)
 		}
 		else
 		{
-			printf("%8d%10d%10d%15.10lf%15.10lf%15.10lf\n",array[i].factory_number,array[i].Made,array[i].Eaten,array[i].min_delay,array[i].avg_delay,array[i].max_delay);
+			printf("%8d%10d%10d%15.5lf%15.5lf%15.5lf\n",array[i].factory_number,array[i].Made,array[i].Eaten,array[i].min_delay,array[i].avg_delay,array[i].max_delay);
 		}
 
 	}

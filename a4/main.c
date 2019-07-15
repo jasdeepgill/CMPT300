@@ -2,9 +2,9 @@
 #include "kallocator.h"
 
 int main(int argc, char* argv[]) {
-    initialize_allocator(100, FIRST_FIT);
+    // initialize_allocator(100, FIRST_FIT);
     // initialize_allocator(100, BEST_FIT);
-    // initialize_allocator(100, WORST_FIT);
+    initialize_allocator(100, WORST_FIT);
     printf("Using first fit algorithm on memory size 100\n");
 
     int* p[50] = {NULL};

@@ -29,9 +29,6 @@ void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
     kallocator.free_blocks = NULL;
     kallocator.available = _size;
     kallocator.used = 0;
-    // kallocator.memory = (void*) 10;
-    printf("killme\n");
-    // printf("swag: %d\n", *(int*)(kallocator.memory+101));
 }
 
 void destroy_allocator() {

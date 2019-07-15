@@ -36,7 +36,23 @@ void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
 
 void destroy_allocator() {
     free(kallocator.memory);
-
+    struct nodeStruct* cur = kallocator.allocated_blocks;
+    struct nodeStruct* cur2 = kallocator.free_blocks;
+    struct nodeStruct* prev = NULL;
+    struct nodeStruct* prev2 = NULL;
+    while(cur != NULL)
+    {
+        prev = cur;
+        cur = cur->next;
+        List_deleteNode(&kallocator.allocated_blocks, prev);
+        
+    }
+    while(cur2 != NULL)
+    {   
+        prev2 = cur2;
+        cur2 = cur2->next;
+        List_deleteNode(&kallocator.free_blocks, prev2);    
+    }
     // free other dynamic allocated memory to avoid memory leak
 }
 
@@ -174,6 +190,7 @@ void kfree(void* _ptr) {
     if (merged->block != NULL)
     {
         List_insertTail(&kallocator.free_blocks, merged);
+        free(free_block);
     } else
     {
         List_insertTail(&kallocator.free_blocks, free_block);

@@ -22,8 +22,8 @@ int main(int argc, char* argv[]) {
     print_statistics();
 
     for(int i=0; i<5; ++i) {
-        if(i%2 == 0)
-            continue;
+        // if(i%2 == 0)
+        //     continue;
 
         printf("Freeing p[%d]\n", i);
         kfree(p[i]);

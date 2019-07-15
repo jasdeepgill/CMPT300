@@ -176,10 +176,12 @@ void kfree(void* _ptr) {
             merged->block = cur->block;
             merged->size = cur->size + target->size;
         }
-        if ((target->block + target->size) == cur->block)
+        if ((target->block + target->size) == cur->block && merged->block == NULL)
         {
             merged->block = target->block;
-            merged->size = target->size + target->next->size;
+            merged->size = target->size + cur->size;
+        } else if ((target->block + target->size) == cur->block && merged->block != NULL){
+            merged->size += cur->size;
         }
         cur = cur->next;
     }
@@ -223,7 +225,12 @@ void print_statistics() {
     int largest_free_chunk_size = 0;
 
     // Calculate the statistics
-
+    struct nodeStruct* cur = kallocator.free_blocks;
+    while(cur != NULL)
+    {
+        printf("Block: %p Node size: %d\n", cur->block, cur->size);
+        cur = cur->next;
+    }
     printf("Allocated size = %d\n", allocated_size);
     printf("Allocated chunks = %d\n", allocated_chunks);
     printf("Free size = %d\n", free_size);
@@ -232,5 +239,5 @@ void print_statistics() {
     printf("Smallest free chunk size = %d\n", smallest_free_chunk_size);
 }
 
-
+// valgrind --leak-check=full --show-leak-kinds=all --num-callers=20 ./kallocation
 

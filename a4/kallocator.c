@@ -63,35 +63,31 @@ void* kalloc(int _size) {
     {
         case 0:
         {
-            struct nodeStruct* min_addr = kallocator.free_blocks;
+            void* min_addr = kallocator.memory + kallocator.size + 1;
+            struct nodeStruct* temp = NULL;
             while(cur_free != NULL)
             {
-                if (cur_free->size >= _size && cur_free->block < min_addr->block)
+                if (cur_free->size >= _size && cur_free->block < min_addr)
                 {
-                    min_addr = cur_free;
+                    min_addr = cur_free->block;
+                    temp = cur_free;
                 }
                 cur_free = cur_free->next;
             }
-            if (min_addr != NULL)
+            if (temp != NULL)
             {
-                ptr = min_addr->block;
-                if (min_addr->size > _size)
+                ptr = temp->block;
+                if (temp->size > _size)
                 {
-                    struct nodeStruct* remainder = List_createNode(min_addr->block + _size, min_addr->size - _size);
+                    struct nodeStruct* remainder = List_createNode(temp->block + _size, temp->size - _size);
                     List_insertTail(&kallocator.free_blocks, remainder);
                 }
-                List_deleteNode(&kallocator.free_blocks, min_addr);
+                List_deleteNode(&kallocator.free_blocks, temp);
             }
             if (ptr == NULL)
             {
-                if (kallocator.available >= _size)
-                {
-                    ptr = kallocator.memory + kallocator.used;
-                }
-                else
-                {
-                    printf("Not enough memory.\n");
-                }
+                // printf("Not enough memory.\n");
+                break;
             }
             
             struct nodeStruct* block = List_createNode(ptr, _size);
@@ -102,35 +98,31 @@ void* kalloc(int _size) {
         }
         case 1:
         {
-            struct nodeStruct* min = kallocator.free_blocks;
+            int min = kallocator.size+1;
+            struct nodeStruct* temp = NULL;
             while(cur_free != NULL)
             {
-                if (cur_free->size >= _size && cur_free->size < min->size)
+                if (cur_free->size >= _size && cur_free->size < min)
                 {
-                    min = cur_free;
+                    min = cur_free->size;
+                    temp = cur_free;
                 }
                 cur_free = cur_free->next;
             }
-            if (min != NULL)
+            if (temp != NULL)
             {
-                ptr = min->block;
-                if (min->size > _size)
+                ptr = temp->block;
+                if (temp->size > _size)
                 {
-                    struct nodeStruct* remainder = List_createNode(min->block + _size, min->size - _size);
+                    struct nodeStruct* remainder = List_createNode(temp->block + _size, temp->size - _size);
                     List_insertTail(&kallocator.free_blocks, remainder);
                 }
-                List_deleteNode(&kallocator.free_blocks, min);
+                List_deleteNode(&kallocator.free_blocks, temp);
             }
             if (ptr == NULL)
             {
-                if (kallocator.available >= _size)
-                {
-                    ptr = kallocator.memory + kallocator.used;
-                }
-                else
-                {
-                    printf("Not enough memory.\n");
-                }
+                // printf("Not enough memory.\n");
+                break;
             }
             struct nodeStruct* block = List_createNode(ptr, _size);
             List_insertTail(&kallocator.allocated_blocks, block);
@@ -140,35 +132,31 @@ void* kalloc(int _size) {
         }
         case 2:
         {
-            struct nodeStruct* max = kallocator.free_blocks;
+            int max = 0;
+            struct nodeStruct* temp = NULL;
             while(cur_free != NULL)
             {
-                if (cur_free->size >= _size && cur_free->size > max->size)
+                if (cur_free->size >= _size && cur_free->size > max)
                 {
-                    max = cur_free;
+                    max = cur_free->size;
+                    temp = cur_free;
                 }
                 cur_free = cur_free->next;
             }
-            if (max != NULL)
+            if (temp != NULL)
             {
-                ptr = max->block;
-                if (max->size > _size)
+                ptr = temp->block;
+                if (temp->size > _size)
                 {
-                    struct nodeStruct* remainder = List_createNode(max->block + _size, max->size - _size);
+                    struct nodeStruct* remainder = List_createNode(temp->block + _size, temp->size - _size);
                     List_insertTail(&kallocator.free_blocks, remainder);
                 }
-                List_deleteNode(&kallocator.free_blocks, max);
+                List_deleteNode(&kallocator.free_blocks, temp);
             }
             if (ptr == NULL)
             {
-                if (kallocator.available >= _size)
-                {
-                    ptr = kallocator.memory + kallocator.used;
-                }
-                else
-                {
-                    printf("Not enough memory.\n");
-                }
+                // printf("Not enough memory.\n");
+                break;
             }
             struct nodeStruct* block = List_createNode(ptr, _size);
             List_insertTail(&kallocator.allocated_blocks, block);
@@ -189,34 +177,41 @@ void kfree(void* _ptr) {
     struct nodeStruct* free_block = List_createNode(target->block, target->size);
     struct nodeStruct* cur = kallocator.free_blocks;
     struct nodeStruct* merged = List_createNode(NULL, 0);
-    struct nodeStruct* garbage = NULL;
-    struct nodeStruct* garbage2 = NULL;
+    struct nodeStruct* garbage[4] = {NULL};
     while(cur != NULL)
     {
-        if ((cur->block + cur->size) == target->block)
+        if ((cur->block + cur->size) == target->block && merged->block == NULL)
         {
+            // printf("left = %p\n", cur->block);
             merged->block = cur->block;
             merged->size = cur->size + target->size;
-            garbage = cur;
+            garbage[0] = cur;
+        } else if ((cur->block + cur->size) == target->block && merged->block != NULL)
+        {
+            // printf("left = %p right = %p\n", cur->block, merged->block);
+            merged->size += cur->size;
+            garbage[1] = cur;
         }
         if ((target->block + target->size) == cur->block && merged->block == NULL)
         {
+            // printf("right = %p\n", cur->block);
             merged->block = target->block;
             merged->size = target->size + cur->size;
-            garbage = cur;
+            garbage[2] = cur;
         } else if ((target->block + target->size) == cur->block && merged->block != NULL){
+            // printf("right = %p left = %p\n", cur->block, merged->block);
             merged->size += cur->size;
-            garbage2 = cur;
+            garbage[3] = cur;
         }
         cur = cur->next;
     }
-    if (garbage != NULL)
+
+    for (int i = 0; i < 4; ++i)
     {
-        List_deleteNode(&kallocator.free_blocks, garbage);
-    }
-    if (garbage2 != NULL)
-    {
-        List_deleteNode(&kallocator.free_blocks, garbage2);
+        if (garbage[i] != NULL)
+        {
+            List_deleteNode(&kallocator.free_blocks, garbage[i]);
+        }
     }
     if (merged->block != NULL)
     {
@@ -268,6 +263,10 @@ void print_statistics() {
     free_size = kallocator.available;
     free_chunks = List_countNodes(kallocator.free_blocks);
     struct nodeStruct* cur = kallocator.free_blocks;
+    if (kallocator.free_blocks == NULL)
+    {
+        smallest_free_chunk_size = 0;
+    }
     while(cur != NULL)
     {
         if (cur->size < smallest_free_chunk_size)

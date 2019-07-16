@@ -26,7 +26,7 @@ void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
     kallocator.memory = malloc((size_t)kallocator.size);
     // Add some other initialization
     kallocator.allocated_blocks = NULL;
-    kallocator.free_blocks = NULL;
+    List_insertHead(&kallocator.free_blocks, List_createNode(kallocator.memory, _size)); 
     kallocator.available = _size;
     kallocator.used = 0;
 }
@@ -257,10 +257,27 @@ void print_statistics() {
     int largest_free_chunk_size = 0;
 
     // Calculate the statistics
+    // struct nodeStruct* cur = kallocator.free_blocks;
+    // while(cur != NULL)
+    // {
+    //     printf("Block: %p Node size: %d\n", cur->block, cur->size);
+    //     cur = cur->next;
+    // }
+    allocated_size = kallocator.used;
+    allocated_chunks = List_countNodes(kallocator.allocated_blocks);
+    free_size = kallocator.available;
+    free_chunks = List_countNodes(kallocator.free_blocks);
     struct nodeStruct* cur = kallocator.free_blocks;
     while(cur != NULL)
     {
-        printf("Block: %p Node size: %d\n", cur->block, cur->size);
+        if (cur->size < smallest_free_chunk_size)
+        {
+            smallest_free_chunk_size = cur->size;
+        }
+        if (cur->size > largest_free_chunk_size)
+        {
+            largest_free_chunk_size = cur->size;
+        }
         cur = cur->next;
     }
     printf("Allocated size = %d\n", allocated_size);

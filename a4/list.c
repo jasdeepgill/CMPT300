@@ -78,28 +78,28 @@ void List_deleteNode (struct nodeStruct **headRef, struct nodeStruct *node){
 	free(node);
 }
 
-// void List_sort (struct nodeStruct **headRef){
-// 	struct nodeStruct* cur = *headRef;
-// 	struct nodeStruct* sorted_list = NULL;
-// 	while(cur != NULL)
-// 	{
-// 		struct nodeStruct* cur_next = cur->next;
-// 		if (sorted_list == NULL || cur->item <= sorted_list->item)
-// 		{
-// 			List_insertHead(&sorted_list, cur);
-// 		}
-// 		else
-// 		{
-// 			struct nodeStruct* cur_sorted = sorted_list;
-// 			// Point of Insertion
-// 			while(cur_sorted->next != NULL && cur->item > cur_sorted->next->item)
-// 			{
-// 				cur_sorted = cur_sorted->next;
-// 			}
-// 			cur->next = cur_sorted->next;
-// 			cur_sorted->next = cur;
-// 		}
-// 		cur = cur_next;
-// 	}
-// 	*headRef = sorted_list;
-// }
+void List_sort (struct nodeStruct **headRef){
+	struct nodeStruct* cur = *headRef;
+	struct nodeStruct* sorted_list = NULL;
+	while(cur != NULL)
+	{
+		struct nodeStruct* cur_next = cur->next;
+		if (sorted_list == NULL || cur->block <= sorted_list->block)
+		{
+			List_insertHead(&sorted_list, cur);
+		}
+		else
+		{
+			struct nodeStruct* cur_sorted = sorted_list;
+			// Point of Insertion
+			while(cur_sorted->next != NULL && cur->block > cur_sorted->next->block)
+			{
+				cur_sorted = cur_sorted->next;
+			}
+			cur->next = cur_sorted->next;
+			cur_sorted->next = cur;
+		}
+		cur = cur_next;
+	}
+	*headRef = sorted_list;
+}

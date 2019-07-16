@@ -7,15 +7,15 @@ int main(int argc, char* argv[]) {
     // initialize_allocator(100, WORST_FIT);
     // printf("Using first fit algorithm on memory size 100\n");
 
-    int* p[50] = {NULL};
-    for(int i=0; i<12; ++i) {
+    long* p[50] = {NULL};
+    for(long i=0; i<12; ++i) {
         p[i] = kalloc(sizeof(long));
         if(p[i] == NULL) {
             printf("Allocation failed\n");
             continue;
         }
         *(p[i]) = i;
-        printf("p[%d] = %p ; *p[%d] = %d\n", i, p[i], i, *(p[i]));
+        printf("p[%ld] = %p ; *p[%ld] = %ld\n", i, p[i], i, *(p[i]));
     }
     // *(p[0]) = 300;
     // printf("p[%d] = %p ; *p[%d] = %d\n", 0, p[0], 0, *(p[0]));
@@ -32,14 +32,15 @@ int main(int argc, char* argv[]) {
 
     print_statistics();
 
+    char* c[50] = {NULL};
     for(int i=0; i<2; ++i) {
-        p[i] = kalloc(sizeof(char));
-        if(p[i] == NULL) {
+        c[i] = kalloc(sizeof(char));
+        if(c[i] == NULL) {
             printf("Allocation failed\n");
             continue;
         }
-        *(p[i]) = i;
-        printf("p[%d] = %p ; *p[%d] = %d\n", i, p[i], i, *(p[i]));
+        *(c[i]) = (char) i;
+        printf("c[%d] = %p ; *c[%d] = %d\n", i, c[i], i, *(c[i]));
     }
 
     print_statistics();
@@ -55,14 +56,15 @@ int main(int argc, char* argv[]) {
 
     print_statistics();
     
+    short* s[50] = {NULL};
     for(int i=0; i<1; ++i) {
-        p[i] = kalloc(sizeof(short));
-        if(p[i] == NULL) {
+        s[i] = kalloc(sizeof(short));
+        if(s[i] == NULL) {
             printf("Allocation failed\n");
             continue;
         }
-        *(p[i]) = i;
-        printf("p[%d] = %p ; *p[%d] = %d\n", i, p[i], i, *(p[i]));
+        *(s[i]) = (short) i;
+        printf("s[%d] = %p ; *s[%d] = %d\n", i, s[i], i, *(s[i]));
     }
     // *(p[0]) = 300;
     // printf("p[%d] = %p ; *p[%d] = %d\n", 0, p[0], 0, *(p[0]));

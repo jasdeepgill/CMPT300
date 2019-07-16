@@ -3,8 +3,8 @@
 
 int main(int argc, char* argv[]) {
     // initialize_allocator(100, FIRST_FIT);
-    // initialize_allocator(100, BEST_FIT);
-    initialize_allocator(100, WORST_FIT);
+    initialize_allocator(100, BEST_FIT);
+    // initialize_allocator(100, WORST_FIT);
     printf("Using first fit algorithm on memory size 100\n");
 
     int* p[50] = {NULL};
@@ -30,6 +30,17 @@ int main(int argc, char* argv[]) {
         p[i] = NULL;
     }
 
+    for(int i=0; i<4; ++i) {
+        p[i] = kalloc(sizeof(int));
+        if(p[i] == NULL) {
+            printf("Allocation failed\n");
+            continue;
+        }
+        *(p[i]) = i;
+        printf("p[%d] = %p ; *p[%d] = %d\n", i, p[i], i, *(p[i]));
+    }
+    *(p[0]) = 300;
+    printf("p[%d] = %p ; *p[%d] = %d\n", 0, p[0], 0, *(p[0]));
     printf("available_memory %d\n", available_memory());
 
     void* before[100] = {NULL};

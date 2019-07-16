@@ -63,14 +63,24 @@ void* kalloc(int _size) {
     {
         case 0:
         {
+            struct nodeStruct* min_addr = kallocator.free_blocks;
             while(cur_free != NULL)
             {
-                if (cur_free->block < ptr && cur_free->size >= _size)
+                if (cur_free->size >= _size && cur_free->block < min_addr->block)
                 {
-                    ptr = cur_free->block;
-                    List_deleteNode(&kallocator.free_blocks, cur_free);
+                    min_addr = cur_free;
                 }
                 cur_free = cur_free->next;
+            }
+            if (min_addr != NULL)
+            {
+                ptr = min_addr->block;
+                if (min_addr->size > _size)
+                {
+                    struct nodeStruct* remainder = List_createNode(min_addr->block + _size, min_addr->size - _size);
+                    List_insertTail(&kallocator.free_blocks, remainder);
+                }
+                List_deleteNode(&kallocator.free_blocks, min_addr);
             }
             if (ptr == NULL)
             {
@@ -104,6 +114,11 @@ void* kalloc(int _size) {
             if (min != NULL)
             {
                 ptr = min->block;
+                if (min->size > _size)
+                {
+                    struct nodeStruct* remainder = List_createNode(min->block + _size, min->size - _size);
+                    List_insertTail(&kallocator.free_blocks, remainder);
+                }
                 List_deleteNode(&kallocator.free_blocks, min);
             }
             if (ptr == NULL)
@@ -137,6 +152,11 @@ void* kalloc(int _size) {
             if (max != NULL)
             {
                 ptr = max->block;
+                if (max->size > _size)
+                {
+                    struct nodeStruct* remainder = List_createNode(max->block + _size, max->size - _size);
+                    List_insertTail(&kallocator.free_blocks, remainder);
+                }
                 List_deleteNode(&kallocator.free_blocks, max);
             }
             if (ptr == NULL)
@@ -169,26 +189,35 @@ void kfree(void* _ptr) {
     struct nodeStruct* free_block = List_createNode(target->block, target->size);
     struct nodeStruct* cur = kallocator.free_blocks;
     struct nodeStruct* merged = List_createNode(NULL, 0);
+    struct nodeStruct* garbage = NULL;
+    struct nodeStruct* garbage2 = NULL;
     while(cur != NULL)
     {
         if ((cur->block + cur->size) == target->block)
         {
             merged->block = cur->block;
             merged->size = cur->size + target->size;
-            List_deleteNode(&kallocator.free_blocks, cur);
+            garbage = cur;
         }
         if ((target->block + target->size) == cur->block && merged->block == NULL)
         {
             merged->block = target->block;
             merged->size = target->size + cur->size;
-            List_deleteNode(&kallocator.free_blocks, cur);
+            garbage = cur;
         } else if ((target->block + target->size) == cur->block && merged->block != NULL){
             merged->size += cur->size;
-            List_deleteNode(&kallocator.free_blocks, cur);
+            garbage2 = cur;
         }
         cur = cur->next;
     }
-
+    if (garbage != NULL)
+    {
+        List_deleteNode(&kallocator.free_blocks, garbage);
+    }
+    if (garbage2 != NULL)
+    {
+        List_deleteNode(&kallocator.free_blocks, garbage2);
+    }
     if (merged->block != NULL)
     {
         List_insertTail(&kallocator.free_blocks, merged);
@@ -228,12 +257,12 @@ void print_statistics() {
     int largest_free_chunk_size = 0;
 
     // Calculate the statistics
-    // struct nodeStruct* cur = kallocator.free_blocks;
-    // while(cur != NULL)
-    // {
-    //     printf("Block: %p Node size: %d\n", cur->block, cur->size);
-    //     cur = cur->next;
-    // }
+    struct nodeStruct* cur = kallocator.free_blocks;
+    while(cur != NULL)
+    {
+        printf("Block: %p Node size: %d\n", cur->block, cur->size);
+        cur = cur->next;
+    }
     printf("Allocated size = %d\n", allocated_size);
     printf("Allocated chunks = %d\n", allocated_chunks);
     printf("Free size = %d\n", free_size);

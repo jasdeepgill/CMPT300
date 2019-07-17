@@ -253,12 +253,12 @@ void print_statistics() {
     int largest_free_chunk_size = 0;
 
     // Calculate the statistics
-    struct nodeStruct* cur1 = kallocator.free_blocks;
-    while(cur1 != NULL)
-    {
-        printf("Block: %p Node size: %d\n", cur1->block, cur1->size);
-        cur1 = cur1->next;
-    }
+//     struct nodeStruct* cur1 = kallocator.free_blocks;
+//     while(cur1 != NULL)
+//     {
+//         printf("Block: %p Node size: %d\n", cur1->block, cur1->size);
+//         cur1 = cur1->next;
+//     }
     allocated_size = kallocator.used;
     allocated_chunks = List_countNodes(kallocator.allocated_blocks);
     free_size = kallocator.available;

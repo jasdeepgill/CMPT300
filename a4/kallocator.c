@@ -189,6 +189,7 @@ void kfree(void* _ptr) {
         } else if ((cur->block + cur->size) == target->block && merged->block != NULL)
         {
             // printf("left = %p right = %p\n", cur->block, merged->block);
+            merged->block = cur->block;
             merged->size += cur->size;
             garbage[1] = cur;
         }
@@ -252,12 +253,12 @@ void print_statistics() {
     int largest_free_chunk_size = 0;
 
     // Calculate the statistics
-    // struct nodeStruct* cur = kallocator.free_blocks;
-    // while(cur != NULL)
-    // {
-    //     printf("Block: %p Node size: %d\n", cur->block, cur->size);
-    //     cur = cur->next;
-    // }
+    struct nodeStruct* cur1 = kallocator.free_blocks;
+    while(cur1 != NULL)
+    {
+        printf("Block: %p Node size: %d\n", cur1->block, cur1->size);
+        cur1 = cur1->next;
+    }
     allocated_size = kallocator.used;
     allocated_chunks = List_countNodes(kallocator.allocated_blocks);
     free_size = kallocator.available;

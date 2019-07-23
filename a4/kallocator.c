@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "kallocator.h"
 #include "list.h"
 
@@ -165,7 +166,7 @@ void* kalloc(int _size) {
 			break;
 		}
 		default:
-		printf("WTF\n");
+		// printf("WTF\n");
 		break;
 	}
 	return ptr;
@@ -236,11 +237,11 @@ int compact_allocation(void** _before, void** _after) {
 /////////////////////////////////////// PRE ALLOC ////////////////////////////////////////////
   struct nodeStruct* preAlloc = kallocator.allocated_blocks;
   struct nodeStruct* preFree = kallocator.free_blocks;
-  //printf("MEMEORY: %p\n", kallocator.memory);
+  // printf("MEMEORY: %p\n", kallocator.memory);
   int a = 0;
   while(preAlloc != NULL)
   {
-   printf("PRE ALLOC Block: %p Node size: %d\n", preAlloc->block, preAlloc->size);
+   // printf("PRE ALLOC Block: %p Node size: %d Value: %d\n", preAlloc->block, preAlloc->size,*(int*)(preAlloc->block));
    _before[a] = preAlloc->block;
    preAlloc = preAlloc->next;
    a++;
@@ -248,7 +249,7 @@ int compact_allocation(void** _before, void** _after) {
   while(preFree != NULL)
   {
 	_before[a] = preFree->block;
-   printf("PRE FREE Block: %p Node size: %d\n", preFree->block, preFree->size);
+   // printf("PRE FREE Block: %p Node size: %d Value: %d\n", preFree->block, preFree->size,*(int*)(preFree->block));
    preFree = preFree->next;
    a++;
   }
@@ -262,34 +263,50 @@ int compact_allocation(void** _before, void** _after) {
 
   	if(kallocator.used != 0)
   	{
+  		// printf("WTF BRUH %d\n", *(int*)(curAlloc->block));
+  		memmove(kallocator.memory,curAlloc->block, curAlloc->size);
+  		
   		curAlloc->block = kallocator.memory; // move the allocated block to the first address in memory
-
-		printf("BEGINNING ADDRESS: %p\n", curAlloc->block);
+  		
+		// printf("BEGINNING ADDRESS: %p\n", curAlloc->block);
 
   	
-  		if (curAlloc->next == NULL) // if there is only one
+  		if (curAlloc->next == NULL) // if there is only one allocated block
   		{
 	  		end = curAlloc->block + curAlloc->size;
-	  		//printf("curAlloc->block: %p\ncurAlloc->size: %d\n", curAlloc->block, curAlloc->size);
+			memmove(end,curFree->block,curFree->size);
+	   		//printf("curAlloc->block: %p\ncurAlloc->size: %d\n", curAlloc->block, curAlloc->size);
 			//printf("END Allocated Block: %p\n", end);
+			
 			curFree->block = end;
+			
 			temp = end;
 			//printf("WTF BRUH: %p\n", curFree->block);
 	  	}
-	  	else
+	  	else // if there is more than 1 allocated block
 	  	{
 	  		//printf("bruh why %d\n", kallocator.available);
 			while(curAlloc->next != NULL) // moves together the allocated array
 		  	{
 				//printf("Allocated Block: %p Node size: %d\n", curAlloc->block, curAlloc->size);
+				memmove(curAlloc->block + curAlloc->size, curAlloc->next->block, curAlloc->size);
+				// printf("ADDRESS: %p VALUE: %d\n", curAlloc->block,*(int*)(curAlloc->block));
 				curAlloc->next->block = curAlloc->block + curAlloc->size; // the next address block 
+				
+				// printf("curAlloc->block + curAlloc->size: %p curAlloc->next->block: %p\n", curAlloc->block + curAlloc->size,curAlloc->next->block);
+
 				end = curAlloc->block + curAlloc->size; // keeps the end position of the alloc block
+				// printf("old curAlloc: %p\n", curAlloc->block);
 				curAlloc = curAlloc->next;
+				// printf("new curAlloc: %p\n", curAlloc->block);
 				numalloc++;
+
 		  	}
-		  	if(kallocator.available != 0)
+		  	if(kallocator.available != 0) //if there is free space in the memory
 		  	{
+		  		memmove(end + curAlloc->size, curFree->block, curFree->size);
 		  		curFree->block = end + curAlloc->size;
+		  		
 		  		temp = end + curAlloc->size;
 			}
 	  	}
@@ -307,8 +324,11 @@ int compact_allocation(void** _before, void** _after) {
   	{
 	  	while(curFree->next != NULL) // moves together the free array
 	  	{
-		// printf("FREE Block: %p Node size: %d\n", curFree->block, curFree->size);
+			// printf("FREE Block: %p Node size: %d\n", curFree->block, curFree->size);
+
+			memmove(curFree->block + curFree->size, curFree->next->block, curFree->size);
 			curFree->next->block = curFree->block + curFree->size;
+			
 			curFree = curFree->next;
 	  	}
 
@@ -316,7 +336,7 @@ int compact_allocation(void** _before, void** _after) {
 
 	  while(endFree != NULL) //calculates the total size of free array//
 	  {
-	   //printf("FREE Block Node size: %d\n", endFree->size);
+	   // printf("FREE Block Node size: %d\n", endFree->size);
 	   totalFree = endFree->size + totalFree;
 	   endFree = endFree->next;
 	  }
@@ -340,18 +360,21 @@ int compact_allocation(void** _before, void** _after) {
   int b = 0;
   while(endAlloc2 != NULL)
   {
-  	printf("TEST ALLOC Block: %p Node size: %d\n", endAlloc2->block, endAlloc2->size);
-	_after[b] = endAlloc2->block;
+  	// printf("TEST ALLOC Block: %p Node size: %d\n", endAlloc2->block, endAlloc2->size);
+  	_after[b] = endAlloc2->block;
+  	// memmove(_after[b],endAlloc2->block, endAlloc2->size);
+  	// printf("%d\n", *(int*)(_after+b));
+
 	//printf("%p\n", _after[b]);
-   
    endAlloc2 = endAlloc2->next;
    b++;
   }
   while(endFree2 != NULL)
   {
-  	printf("TEST FREE Block: %p Node size: %d\n", endFree2->block, endFree2->size);
-	_after[b] = endFree2->block;
-   
+  	// printf("TEST FREE Block: %p Node size: %d\n", endFree2->block, endFree2->size);
+  	_after[b] = endFree2->block;
+  	// memmove(_after[b],endFree2->block, endFree2->size);
+  	// printf("%d\n", *(int*)(_after+b));
    endFree2 = endFree2->next;
    b++;
   }
@@ -376,7 +399,14 @@ void print_statistics() {
 	int largest_free_chunk_size = 0;
 
 	// Calculate the statistics
-	// struct nodeStruct* lol = kallocator.free_blocks;
+	// struct nodeStruct* XD = kallocator.allocated_blocks; // allocated blocks
+	// while(XD != NULL)
+	// {
+	//     printf("Block: %p Node size: %d Value: %d\n", XD->block, XD->size, *(int*)(XD->block));
+	//     XD = XD->next;
+	// }	
+
+	// struct nodeStruct* lol = kallocator.free_blocks; // free blocks
 	// while(lol != NULL)
 	// {
 	//     printf("Block: %p Node size: %d\n", lol->block, lol->size);
@@ -403,6 +433,7 @@ void print_statistics() {
 		}
 		cur = cur->next;
 	}
+
 	printf("Allocated size = %d\n", allocated_size);
 	printf("Allocated chunks = %d\n", allocated_chunks);
 	printf("Free size = %d\n", free_size);
